@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 // Lazy-load all pages for code splitting (reduces initial bundle)
 const LoginPage = React.lazy(() => import('@/features/auth/LoginPage'))
 const OnboardingPage = React.lazy(() => import('@/features/auth/OnboardingPage'))
+const ProfilePage = React.lazy(() => import('@/features/profile/ProfilePage'))
 const DashboardPage = React.lazy(() => import('@/features/dashboard/DashboardPage'))
 const EquipmentListPage = React.lazy(() => import('@/features/equipment/EquipmentListPage'))
 const EquipmentDetailPage = React.lazy(() => import('@/features/equipment/EquipmentDetailPage'))
@@ -66,9 +67,11 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function OnboardingRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   if (loading) return <LoadingSpinner fullScreen />
   if (!user) return <Navigate to="/login" replace />
+  // If the user already has a complete profile and is trying to hit /onboarding, send them to /profile
+  if (profile?.contact && window.location.pathname === '/onboarding') return <Navigate to="/profile" replace />
   return <>{children}</>
 }
 
@@ -93,6 +96,11 @@ export default function AppRoutes() {
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<Navigate to="/login" replace />} />
         <Route path="/onboarding" element={<OnboardingRoute><OnboardingPage /></OnboardingRoute>} />
+
+        {/* Profile — auth-only, no contact check, so users can access it even before completing onboarding */}
+        <Route element={<OnboardingRoute><AppLayout /></OnboardingRoute>}>
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
 
         {/* Protected — inside AppLayout */}
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

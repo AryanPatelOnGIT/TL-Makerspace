@@ -244,6 +244,13 @@ export default function OnboardingPage() {
           </div>
         )}
 
+        {Object.keys(errors).length > 0 && (
+          <div className="mb-6 flex items-center gap-3 rounded-md border border-orange bg-orange/15 p-4 text-sm font-bold text-white">
+            <AlertCircle size={20} className="text-orange" />
+            Please fill in all required fields to continue.
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* STEP 1: Choose Description */}
           {step === 1 && (

@@ -87,8 +87,14 @@ export async function createUserProfile(
     updatedAt: now,
     ...extraData,
   }
+  
+  // Strip undefined values which Firestore does not support
+  const cleanProfile = Object.fromEntries(
+    Object.entries(profile).filter(([_, v]) => v !== undefined)
+  )
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await setDoc(ref, profile as any, { merge: true })
+  await setDoc(ref, cleanProfile as any, { merge: true })
   return profile as unknown as UserProfile
 }
 
@@ -97,5 +103,8 @@ export async function updateUserProfile(
   data: Partial<Omit<UserProfile, 'uid' | 'createdAt'>>
 ): Promise<void> {
   const ref = doc(db, 'users', uid)
-  await setDoc(ref, { ...data, updatedAt: serverTimestamp() }, { merge: true })
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([_, v]) => v !== undefined)
+  )
+  await setDoc(ref, { ...cleanData, updatedAt: serverTimestamp() }, { merge: true })
 }

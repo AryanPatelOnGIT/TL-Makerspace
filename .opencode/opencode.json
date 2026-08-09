@@ -1,0 +1,33 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "model": "opencode-go/deepseek-v4-flash",
+    "provider": {
+        "opencode-go": {
+            "options": {
+                "baseURL": "https://opencode.ai/zen/go/v1"
+            },
+            "models": {
+                "deepseek-v4-flash": {
+                    "id": "deepseek-v4-flash",
+                    "name": "DeepSeek V4 Flash"
+                },
+                "deepseek-v4-pro": {
+                    "id": "deepseek-v4-pro",
+                    "name": "DeepSeek V4 Pro"
+                },
+                "glm-5.2": {
+                    "id": "glm-5.2",
+                    "name": "GLM 5.2"
+                },
+                "kimi-k2.7-code": {
+                    "id": "kimi-k2.7-code",
+                    "name": "Kimi K2.7 Code"
+                },
+                "gpt-5.6-luna": {
+                    "id": "gpt-5.6-luna",
+                    "name": "GPT 5.6 Luna"
+                }
+            }
+        }
+    }
+}

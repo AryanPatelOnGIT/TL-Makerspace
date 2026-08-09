@@ -43,33 +43,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let profileUnsub: (() => void) | null = null;
 
-    const authUnsub = onAuthStateChanged(auth, (u) => {
-      setLoading(true)
-      setUser(u)
-      
-      if (profileUnsub) {
-        profileUnsub();
-        profileUnsub = null;
-      }
+    const authUnsub = onAuthStateChanged(
+      auth,
+      (u) => {
+        setLoading(true)
+        setUser(u)
+        
+        if (profileUnsub) {
+          profileUnsub();
+          profileUnsub = null;
+        }
 
-      if (u) {
-        profileUnsub = onSnapshot(doc(db, 'users', u.uid), (docSnap: any) => {
-          if (docSnap.exists()) {
-            setProfile(docSnap.data() as UserProfile)
-          } else {
+        if (u) {
+          profileUnsub = onSnapshot(doc(db, 'users', u.uid), (docSnap: any) => {
+            if (docSnap.exists()) {
+              setProfile(docSnap.data() as UserProfile)
+            } else {
+              setProfile(null)
+            }
+            setLoading(false)
+          }, (error: any) => {
+            console.error("Profile snapshot error:", error)
             setProfile(null)
-          }
-          setLoading(false)
-        }, (error: any) => {
-          console.error("Profile snapshot error:", error)
+            setLoading(false)
+          })
+        } else {
           setProfile(null)
           setLoading(false)
-        })
-      } else {
+        }
+      },
+      (error: any) => {
+        console.error("Auth state change error:", error)
+        setUser(null)
         setProfile(null)
         setLoading(false)
       }
-    })
+    )
 
     return () => {
       authUnsub()

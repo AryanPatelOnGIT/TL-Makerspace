@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { AlertTriangle, Box, CalendarDays, MessageSquare, Wrench } from 'lucide-react'
+import { AlertTriangle, Box, CalendarDays, MessageSquare, Wrench, Bell } from 'lucide-react'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { useAuth } from '@/contexts/AuthContext'
 import { getActiveUserCheckouts, isCheckoutOverdue } from '@/services/firebase/toolCheckouts'
 import { getUserProjects } from '@/services/firebase/projects'
-import type { Booking, Equipment } from '@/types'
-import { todayStr } from '@/lib/utils'
+import type { Booking, Equipment, Announcement } from '@/types'
+import { todayStr, cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { DarkStatCard, RoundedBarChart, StepsPanel } from '@/components/visual'
 
@@ -50,6 +50,49 @@ export default function DashboardPage() {
     queryKey: ['projects', 'user', user?.uid],
     queryFn: () => getUserProjects(user!.uid),
     enabled: Boolean(user),
+  })
+
+  const { data: upcomingBookings = [] } = useQuery({
+    queryKey: ['bookings', 'upcoming', user?.uid],
+    queryFn: async () => {
+      const q = query(
+        collection(db, COLLECTIONS.BOOKINGS),
+        where('userId', '==', user!.uid),
+        where('date', '>=', today),
+      )
+      const snap = await getDocs(q)
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }) as Booking)
+      return list
+        .filter(b => b.status !== 'cancelled')
+        .sort((a, b) => {
+          const dateDiff = a.date.localeCompare(b.date)
+          if (dateDiff !== 0) return dateDiff
+          return a.startTime.localeCompare(b.startTime)
+        })
+        .slice(0, 3)
+    },
+    enabled: Boolean(user),
+  })
+
+  const { data: announcements = [] } = useQuery({
+    queryKey: ['announcements', 'active'],
+    queryFn: async () => {
+      const q = query(
+        collection(db, COLLECTIONS.ANNOUNCEMENTS),
+        where('isActive', '==', true),
+      )
+      const snap = await getDocs(q)
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }) as Announcement)
+      const priorityWeight = { urgent: 3, high: 2, normal: 1 }
+      return list
+        .sort((a, b) => {
+          const weightA = priorityWeight[a.priority as keyof typeof priorityWeight] || 1
+          const weightB = priorityWeight[b.priority as keyof typeof priorityWeight] || 1
+          if (weightB !== weightA) return weightB - weightA
+          return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+        })
+        .slice(0, 3)
+    },
   })
 
   const overdueCount = activeCheckouts.filter(isCheckoutOverdue).length
@@ -104,6 +147,72 @@ export default function DashboardPage() {
           </button>
         </div>
       </section>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Your Schedule */}
+        <section className="rounded-card bg-charcoal border border-hairline p-5 text-white sm:p-6" aria-labelledby="schedule-title">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/40">Your upcoming sessions</p>
+          <h2 id="schedule-title" className="mt-1 text-xl font-extrabold tracking-[-0.04em] text-white">
+            Upcoming Schedule
+          </h2>
+          {upcomingBookings.length === 0 ? (
+            <div className="mt-5 flex flex-col items-center justify-center py-5 text-center">
+              <p className="text-xs text-white/50">No upcoming bookings scheduled.</p>
+              <Button size="sm" variant="outline" className="mt-3 text-xs" onClick={() => navigate('/bookings/new')}>
+                Book a slot
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-5 space-y-2.5">
+              {upcomingBookings.map(b => (
+                <div key={b.id} className="flex items-center justify-between rounded-xl bg-white/5 p-3 border border-white/5">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-xs text-white truncate">{b.machineName}</p>
+                    <p className="text-[10px] text-white/50 truncate">{b.projectTitle}</p>
+                  </div>
+                  <div className="text-right shrink-0 ml-3">
+                    <p className="text-xs font-bold text-pink">{b.date}</p>
+                    <p className="text-[10px] text-white/45">{b.startTime} - {b.endTime}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Lab Announcements */}
+        <section className="rounded-card bg-charcoal border border-hairline p-5 text-white sm:p-6" aria-labelledby="announcements-title">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/40">Lab notices</p>
+          <h2 id="announcements-title" className="mt-1 text-xl font-extrabold tracking-[-0.04em] text-white">
+            Announcements
+          </h2>
+          {announcements.length === 0 ? (
+            <div className="mt-5 py-5 text-center text-xs text-white/50">
+              No active announcements from the lab coordinators.
+            </div>
+          ) : (
+            <div className="mt-5 space-y-2.5">
+              {announcements.map(a => (
+                <div key={a.id} className={cn(
+                  "rounded-xl p-3 border",
+                  a.priority === 'high' ? 'bg-orange/10 border-orange/20 text-orange-400' :
+                  a.priority === 'urgent' ? 'bg-pink/15 border-pink/25 text-pink' :
+                  'bg-white/5 border-white/5 text-white/80'
+                )}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[9px] uppercase font-bold tracking-wider opacity-60 flex items-center gap-1">
+                      <Bell size={8} /> {a.priority} priority
+                    </span>
+                    <span className="text-[9px] text-white/35 truncate">By {a.authorName}</span>
+                  </div>
+                  <p className="mt-0.5 font-bold text-xs text-white truncate">{a.title}</p>
+                  <p className="mt-0.5 text-[11px] text-white/60 line-clamp-2 leading-relaxed">{a.body}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
         <section className="rounded-card bg-cream p-6 text-black md:p-8" aria-labelledby="availability-title">

@@ -43,11 +43,13 @@ export default function AppLayout() {
         </button>
         <button
           type="button"
-          onClick={() => navigate('/onboarding')}
+          onClick={() => navigate('/profile')}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-pink text-xs font-extrabold text-black"
           aria-label="Open profile"
         >
-          {initials}
+          {user?.photoURL ? (
+            <img src={user.photoURL} alt={initials} className="h-9 w-9 rounded-full object-cover" referrerPolicy="no-referrer" />
+          ) : initials}
         </button>
       </header>
 
@@ -103,11 +105,13 @@ export default function AppLayout() {
           <div className="mt-auto flex items-center gap-3 rounded-md bg-near-black p-3">
             <button
               type="button"
-              onClick={() => navigate('/onboarding')}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink text-xs font-extrabold text-black"
+              onClick={() => navigate('/profile')}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink text-xs font-extrabold text-black overflow-hidden"
               aria-label="Open profile"
             >
-              {initials}
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt={initials} className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" />
+              ) : initials}
             </button>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-white">{profile?.displayName || 'Lab member'}</p>
@@ -124,11 +128,13 @@ export default function AppLayout() {
             <BrandLockup compact className="mx-auto" />
             <button
               type="button"
-              onClick={() => navigate('/onboarding')}
-              className="absolute right-8 flex h-9 w-9 items-center justify-center rounded-full bg-pink text-xs font-extrabold text-black"
+              onClick={() => navigate('/profile')}
+              className="absolute right-8 flex h-9 w-9 items-center justify-center rounded-full bg-pink text-xs font-extrabold text-black overflow-hidden"
               aria-label="Open profile"
             >
-              {initials}
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt={initials} className="h-9 w-9 rounded-full object-cover" referrerPolicy="no-referrer" />
+              ) : initials}
             </button>
           </div>
           <div className="w-full px-4 py-6 md:px-8 md:pb-8 md:pt-0">

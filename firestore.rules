@@ -198,6 +198,18 @@ service cloud.firestore {
     }
 
     // ================================================================
+    // FEEDBACK COLLECTION
+    // ================================================================
+    match /feedback/{feedbackId} {
+      // Only staff/admin can read feedback
+      allow read: if isStaff();
+      // Authenticated users can create their own feedback
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      // No one can edit or delete feedback
+      allow update, delete: if false;
+    }
+
+    // ================================================================
     // DEFAULT DENY
     // ================================================================
     match /{document=**} {

@@ -8,16 +8,24 @@ import {
   persistentMultipleTabManager,
 } from 'firebase/firestore'
 
+const rawApiKey = import.meta.env.VITE_FIREBASE_API_KEY ||
+  (import.meta.env.VITE_FIREBASE_API_KEY_B64
+    ? atob(import.meta.env.VITE_FIREBASE_API_KEY_B64)
+    : undefined)
+
 const firebaseConfig = {
-  // Decode base64 to avoid GitHub Secret Scanner alerts in the public bundle
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY_B64 ? atob(import.meta.env.VITE_FIREBASE_API_KEY_B64) : import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: rawApiKey || 'AIzaSyDemoKeyForDevelopmentModeOnly123',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'tinkers-lab-dev.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'tinkers-lab-dev',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'tinkers-lab-dev.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '1234567890',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:1234567890:web:1234567890',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-1234567890',
 }
+
+export const isFirebaseConfigured = Boolean(
+  import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY_B64
+)
 
 // Initialize Firebase app
 export const app = initializeApp(firebaseConfig)

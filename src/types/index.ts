@@ -504,3 +504,15 @@ export interface AuditLog {
   createdAt: Timestamp
 }
 
+// ============================================================
+// FEEDBACK TYPES
+// ============================================================
+export interface Feedback {
+  id: string
+  userId: string
+  userName: string
+  userEmail: string
+  message: string
+  createdAt: Timestamp
+}
+
