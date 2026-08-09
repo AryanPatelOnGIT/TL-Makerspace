@@ -31,6 +31,8 @@ The Tinkerers' Lab platform utilizes a strict Role-Based Access Control (RBAC) s
 | --- | --- | :---: | :---: | :---: | :---: |
 | **Profile** | Login / Logout | ✓ | ✓ | ✓ | ✓ |
 | | View/Edit Own Profile | ✓ | ✓ | ✓ | ✓ |
+| **Feedback** | Submit Feedback | ✓ | ✓ | ✓ | ✓ |
+| | Read All Feedback | ✓ | ✓ | ✓ | ✗ |
 | **Users** | View All Users | ✓ | ✗ | ✗ | ✗ |
 | | Create/Edit/Delete Users | ✓ | ✗ | ✗ | ✗ |
 | | Assign Roles | ✓ | ✗ | ✗ | ✗ |

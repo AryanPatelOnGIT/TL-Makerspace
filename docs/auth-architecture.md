@@ -27,9 +27,9 @@ The routes are protected by three custom guards:
 2. **`ProtectedRoute`**: Accessible when the user is logged in *and* has a complete profile in Firestore.
    * If logged out -> `/login`
    * If logged in but profile is null -> `/onboarding`
-3. **`OnboardingRoute`**: Accessible only when the user is logged in *but has no profile* in Firestore yet.
+3. **`OnboardingRoute`**: Accessible when the user is logged in (used for `/onboarding` and `/profile`).
    * If logged out -> `/login`
-   * If logged in and has profile -> `/`
+   * If logged in and has a complete profile, accessing `/onboarding` redirects to `/profile`.
 
 ### Routes Map
 
@@ -37,6 +37,7 @@ The routes are protected by three custom guards:
 | :--- | :--- | :--- |
 | `/login` | `PublicRoute` | `LoginPage` (Only Google Auth button) |
 | `/onboarding` | `OnboardingRoute` | `OnboardingPage` (Profile setup form) |
+| `/profile` | `OnboardingRoute` | `ProfilePage` (Profile details & edit, feedback, logout) |
 | `/` | `ProtectedRoute` | `DashboardPage` |
 | `/*` (Admin, etc) | `ProtectedRoute` | Respective protected pages |
 
@@ -92,3 +93,9 @@ interface UserProfile {
    * Reads pre-filled user details (email and name) from `useAuth()`.
    * Displays step-by-step forms based on `userType` to collect profile information.
    * Writes data directly to Firestore on submit and completes authentication.
+3. **`ProfilePage.tsx`**:
+   * Serves as the user details hub.
+   * View Mode: Displays profile photo (Google `photoURL`), name, email, and user-type specific details. Filters out duplicate badges (e.g. Student/Student).
+   * Edit Mode: Allows editing profile details (excluding roles, status, and terms/safety agreements).
+   * Feedback panel: Allows submitting text feedback up to 200 words, rate-limited to 5 minutes between submissions (stored in `localStorage`).
+   * Logout button: Explicitly signs out of Firebase Auth and redirects to `/login`.
