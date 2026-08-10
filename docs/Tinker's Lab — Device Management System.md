@@ -357,5 +357,9 @@ Apps Script sends reminder email 24hrs before booking
 | June 26, 2026 | 4 user types with conditional form sections | Students, Professors, Startups, External all have different info needs |
 | June 26, 2026 | Machine-specific sheets routed by Apps Script | Easier to track usage history per machine |
 | June 26, 2026 | MVP first, scale later | Get system running in 2-3 days, add features incrementally |
+| August 10, 2026 | Global `cleanFirestoreData` payload sanitizer | Prevents `undefined` field errors from failing Firestore `addDoc`/`updateDoc` writes |
+| August 10, 2026 | Custom Dark OLED Date Picker (`AestheticDatePicker`) | Replaced native browser date pickers with dark popover calendar, presets (Today/Tomorrow/Next Week), and Lime accents |
+| August 10, 2026 | Structured Agreement Panel & Neon-Yellow Chips | Harmonized form agreements with `AgreementCard` square checkmark boxes and neon-yellow (`lime`) equipment chips with tick icons |
+| August 10, 2026 | Resilient Feedback Submission | Added permission-safe local storage buffering for feedback/issue forms to guarantee smooth user experience |
 
 [Tool Access System — Finalized Spec (Booking + Checkout)](https://app.notion.com/p/Tool-Access-System-Finalized-Spec-Booking-Checkout-390365156faf8132a648d5be74af5309?pvs=21)

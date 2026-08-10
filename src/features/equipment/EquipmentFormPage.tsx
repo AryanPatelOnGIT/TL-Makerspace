@@ -10,7 +10,7 @@ import { doc, getDoc, addDoc, updateDoc, collection } from 'firebase/firestore'
 import { useAuth } from '@/contexts/AuthContext'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn, cleanFirestoreData } from '@/lib/utils'
 import type { Equipment } from '@/types'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 
@@ -92,11 +92,17 @@ export default function EquipmentFormPage() {
 
   const onSubmit = async (data: EquipmentFormData) => {
     try {
+      const payload = cleanFirestoreData({
+        ...data,
+        imageUrls: existing?.imageUrls ?? [],
+        manualUrls: existing?.manualUrls ?? [],
+        safetyDocUrls: existing?.safetyDocUrls ?? [],
+      })
       if (isEdit) {
-        await updateDoc(doc(db, COLLECTIONS.EQUIPMENT, id!), { ...data, imageUrls: existing?.imageUrls ?? [], manualUrls: existing?.manualUrls ?? [], safetyDocUrls: existing?.safetyDocUrls ?? [] })
+        await updateDoc(doc(db, COLLECTIONS.EQUIPMENT, id!), payload)
         toast.success('Equipment updated')
       } else {
-        const docRef = await addDoc(collection(db, COLLECTIONS.EQUIPMENT), { ...data, imageUrls: [], manualUrls: [], safetyDocUrls: [] })
+        const docRef = await addDoc(collection(db, COLLECTIONS.EQUIPMENT), payload)
         toast.success('Equipment added')
         navigate(`/equipment/${docRef.id}`)
         return
@@ -108,10 +114,17 @@ export default function EquipmentFormPage() {
     }
   }
 
+  const onInvalid = (formErrors: any) => {
+    const messages = Object.values(formErrors)
+      .map((e: any) => e?.message)
+      .filter(Boolean)
+    toast.error(`Please fix form errors: ${messages[0] || 'Check required fields'}`)
+  }
+
   if (!isStaff) return <div className="py-16 text-center text-muted-foreground">Admin/staff access required.</div>
   if (isLoading) return <LoadingSpinner text="Loading…" />
 
-  const selectClasses = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  const selectClasses = "flex h-10 w-full rounded-md border border-hairline bg-near-black px-3 py-2 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-lime disabled:cursor-not-allowed disabled:opacity-50"
 
   return (
     <div className="space-y-6 container py-6 mx-auto max-w-4xl animate-fade-in">
@@ -125,7 +138,7 @@ export default function EquipmentFormPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>

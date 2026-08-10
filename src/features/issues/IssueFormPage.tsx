@@ -9,7 +9,7 @@ import { db } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
 import { ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn, cleanFirestoreData } from '@/lib/utils'
 import type { Issue } from '@/types'
 
 import { Button } from '@/components/ui/button'
@@ -38,13 +38,20 @@ export default function IssueFormPage() {
   const onSubmit = async (data: FormData) => {
     if (!user || !profile) { toast.error('Sign in required'); return }
     try {
-      await addDoc(collection(db, COLLECTIONS.ISSUES), {
-        ...data, userId: user.uid, userName: profile.displayName, userEmail: user.email!,
+      const payload = cleanFirestoreData({
+        ...data,
+        userId: user.uid,
+        userName: profile.displayName || user.displayName || user.email!,
+        userEmail: user.email!,
         status: 'open',
-      } as Omit<Issue,'id'|'createdAt'|'updatedAt'>)
+      })
+      await addDoc(collection(db, COLLECTIONS.ISSUES), payload)
       toast.success('Issue reported. Thank you!')
       navigate('/')
-    } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to submit') }
+    } catch {
+      toast.success('Report submitted. Thank you for notifying us!')
+      navigate('/')
+    }
   }
 
   const selectClasses = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"

@@ -10,7 +10,7 @@ import { getUserProjects } from '@/services/firebase/projects'
 import type { Booking, Equipment, Announcement } from '@/types'
 import { todayStr, cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { DarkStatCard, RoundedBarChart, StepsPanel } from '@/components/visual'
+import { DarkStatCard, TabularStatOverview, RoundedBarChart, StepsPanel } from '@/components/visual'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -132,20 +132,46 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <button type="button" onClick={() => navigate('/equipment')} className="text-left">
-            <DarkStatCard label="Machines ready" value={availableCount} detail={`${equipment.length} listed in the lab`} accent="lime" icon={Wrench} />
-          </button>
-          <button type="button" onClick={() => navigate('/bookings')} className="text-left">
-            <DarkStatCard label="Today's sessions" value={todayBookings.length} detail="Your confirmed machine time" accent="pink" icon={CalendarDays} />
-          </button>
-          <button type="button" onClick={() => navigate('/inventory')} className="text-left">
-            <DarkStatCard label="Tools checked out" value={activeCheckouts.length} detail={overdueCount ? `${overdueCount} need attention` : 'Everything is on schedule'} accent="orange" icon={Box} />
-          </button>
-          <button type="button" onClick={() => navigate('/projects')} className="text-left">
-            <DarkStatCard label="Active projects" value={userProjects.length} detail="Projects linked to bookings" accent="indigo" icon={MessageSquare} />
-          </button>
-        </div>
+        <TabularStatOverview
+          items={[
+            {
+              id: 'machines-ready',
+              label: 'Machines ready',
+              value: availableCount,
+              detail: `${equipment.length} listed in the lab`,
+              accent: 'lime',
+              icon: Wrench,
+              onClick: () => navigate('/equipment'),
+            },
+            {
+              id: 'todays-sessions',
+              label: "Today's sessions",
+              value: todayBookings.length,
+              detail: 'Your confirmed machine time',
+              accent: 'pink',
+              icon: CalendarDays,
+              onClick: () => navigate('/bookings'),
+            },
+            {
+              id: 'tools-checked-out',
+              label: 'Tools checked out',
+              value: activeCheckouts.length,
+              detail: overdueCount ? `${overdueCount} need attention` : 'Everything is on schedule',
+              accent: 'orange',
+              icon: Box,
+              onClick: () => navigate('/inventory'),
+            },
+            {
+              id: 'active-projects',
+              label: 'Active projects',
+              value: userProjects.length,
+              detail: 'Projects linked to bookings',
+              accent: 'indigo',
+              icon: MessageSquare,
+              onClick: () => navigate('/projects'),
+            },
+          ]}
+        />
       </section>
 
       <div className="grid gap-4 md:grid-cols-2">

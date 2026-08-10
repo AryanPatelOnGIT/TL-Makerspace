@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { AgreementCard, FullBleedQuestionCard } from '@/components/visual'
+import { AestheticDatePicker } from '@/components/common/AestheticDatePicker'
 
 // ── Hourly time slots (9am–6pm) ──────────────────────────────────────────────
 const TIME_SLOTS = [
@@ -162,6 +163,17 @@ export default function BookingFormPage() {
     }
   }
 
+  const onInvalid = (formErrors: any) => {
+    const messages = Object.values(formErrors)
+      .map((e: any) => e?.message)
+      .filter(Boolean)
+    if (messages.length > 0) {
+      toast.error(`Booking form incomplete: ${messages[0]}`)
+    } else {
+      toast.error('Please fill in all required booking fields correctly.')
+    }
+  }
+
   // Guard: user must have a project before booking
   const hasNoProjects = !projectsLoading && projects.length === 0
 
@@ -170,12 +182,12 @@ export default function BookingFormPage() {
 
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full hover:bg-white/10">
+          <ArrowLeft className="h-5 w-5 text-white" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Book a Machine</h1>
-          <p className="text-muted-foreground mt-1">Reserve a time slot for a Tier 1 machine.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white">Book a Machine</h1>
+          <p className="text-white/60 text-xs sm:text-sm mt-1">Reserve a time slot for a Tier 1 machine.</p>
         </div>
       </div>
 
@@ -193,7 +205,7 @@ export default function BookingFormPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5">
 
         {/* ── Machine & Project ─────────────────────────────────────── */}
         <FullBleedQuestionCard
@@ -241,10 +253,10 @@ export default function BookingFormPage() {
 
         {/* ── Date & Time ───────────────────────────────────────────── */}
         {watchEquipmentId && (
-          <Card>
+          <Card className="rounded-card border border-hairline bg-near-black text-white">
             <CardHeader>
-              <CardTitle>Date & Time Slot</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl font-bold text-white">Date & Time Slot</CardTitle>
+              <CardDescription className="text-white/60 text-xs">
                 {existingBookings.length > 0
                   ? `${existingBookings.length} slot(s) already booked on this date.`
                   : 'All slots available on selected date.'}
@@ -252,7 +264,18 @@ export default function BookingFormPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Field label="Booking Date" required error={errors.date?.message}>
-                <Input type="date" {...register('date')} min={todayStr()} className={cn(errors.date && 'border-destructive')} />
+                <Controller
+                  name="date"
+                  control={control}
+                  render={({ field }) => (
+                    <AestheticDatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      minDate={todayStr()}
+                      error={!!errors.date}
+                    />
+                  )}
+                />
               </Field>
 
               {watchDate && (

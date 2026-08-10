@@ -33,3 +33,27 @@ export function generateId(prefix: string, count: number): string {
   return `${prefix}-${String(count + 1).padStart(3, '0')}`
 }
 
+export function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj
+  const cleaned: Record<string, any> = {}
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) continue
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      !(value instanceof Date) &&
+      typeof (value as any).toMillis !== 'function'
+    ) {
+      cleaned[key] = cleanFirestoreData(value)
+    } else if (Array.isArray(value)) {
+      cleaned[key] = value.filter(item => item !== undefined).map(item =>
+        typeof item === 'object' && item !== null ? cleanFirestoreData(item) : item
+      )
+    } else {
+      cleaned[key] = value
+    }
+  }
+  return cleaned as T
+}
+
