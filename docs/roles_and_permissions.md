@@ -4,6 +4,8 @@ The Tinkerers' Lab platform utilizes a strict Role-Based Access Control (RBAC) s
 
 > [!NOTE]
 > All users default to the `student` role upon registration. Elevated roles can only be granted by an existing `super_admin` through the Admin Panel.
+>
+> The platform owner email (`patelaryan19407@gmail.com`) is hard-coded as `super_admin` in `AuthContext.tsx` as a bootstrap/dev override. This is an application-level override, not a Firestore security rule, so elevated access relies on the `users/{uid}` document having the matching role for server-side enforcement.
 
 ## System Roles
 

@@ -97,5 +97,17 @@ interface UserProfile {
    * Serves as the user details hub.
    * View Mode: Displays profile photo (Google `photoURL`), name, email, and user-type specific details. Filters out duplicate badges (e.g. Student/Student).
    * Edit Mode: Allows editing profile details (excluding roles, status, and terms/safety agreements).
-   * Feedback panel: Allows submitting text feedback up to 200 words, rate-limited to 5 minutes between submissions (stored in `localStorage`).
+   * Missing Profile: Authenticated users without a profile document see an onboarding call-to-action that routes to `/onboarding` instead of editable profile controls.
+   * Feedback panel: Allows submitting text feedback up to 200 words, rate-limited to 5 minutes between submissions. The cooldown is tracked per user via a `localStorage` key (`tl_feedback_lastSentAt_{uid}`) so one account's submission does not affect another's.
    * Logout button: Explicitly signs out of Firebase Auth and redirects to `/login`.
+
+## Auth Context (AuthContext.tsx)
+
+* Listens for auth state via `onAuthStateChanged` and mirrors the user's `users/{uid}` document into local state with `onSnapshot`.
+* **Role override**: The email `patelaryan19407@gmail.com` is hard-coded as `super_admin` regardless of the stored `role` value. This is a bootstrap/dev override so the platform owner always retains admin access; all other users derive their role strictly from their `users/{uid}` document.
+* The deprecated `onAuthStateChanged` error callback is not used; auth errors surface through the individual sign-in/sign-out operations instead.
+
+## Firebase Initialization (lib/firebase.ts)
+
+* Initialization fails fast if neither `VITE_FIREBASE_API_KEY` nor `VITE_FIREBASE_API_KEY_B64` is configured.
+* Development credential fallbacks are only applied when emulator mode is explicitly enabled (`VITE_USE_EMULATORS=true` in dev); otherwise a missing key throws before `initializeApp`, `getAuth`, or `initializeFirestore` run.
