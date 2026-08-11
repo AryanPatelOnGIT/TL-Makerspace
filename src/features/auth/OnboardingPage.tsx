@@ -245,7 +245,7 @@ export default function OnboardingPage() {
         )}
 
         {Object.keys(errors).length > 0 && (
-          <div className="mb-6 flex items-center gap-3 rounded-md border border-orange bg-orange/15 p-4 text-sm font-bold text-white">
+          <div role="alert" className="mb-6 flex items-center gap-3 rounded-md border border-orange bg-orange/15 p-4 text-sm font-bold text-white">
             <AlertCircle size={20} className="text-orange" />
             Please fill in all required fields to continue.
           </div>

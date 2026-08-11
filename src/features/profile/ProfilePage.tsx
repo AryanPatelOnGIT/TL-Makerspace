@@ -20,7 +20,7 @@ import { cn, cleanFirestoreData } from '@/lib/utils'
 import type { UserType } from '@/types'
 
 const FEEDBACK_COOLDOWN_MS = 5 * 60 * 1000 // 5 minutes
-const FEEDBACK_STORAGE_KEY = 'lastFeedbackSentAt'
+const FEEDBACK_STORAGE_KEY = 'tl_feedback_lastSentAt'
 const MAX_WORDS = 200
 
 function countWords(text: string): number {
@@ -120,8 +120,10 @@ export default function ProfilePage() {
     }
   }, [profile])
 
+  const feedbackStorageKey = `${FEEDBACK_STORAGE_KEY}_${user?.uid || ''}`
+
   const computeRemaining = () => {
-    const stored = localStorage.getItem(FEEDBACK_STORAGE_KEY)
+    const stored = localStorage.getItem(feedbackStorageKey)
     if (!stored) return 0
     const elapsed = Date.now() - Number(stored)
     const remaining = Math.ceil((FEEDBACK_COOLDOWN_MS - elapsed) / 1000)
@@ -159,7 +161,9 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
-    if (!user || !profile) return
+    if (!user) return
+    if (!profile) { navigate('/onboarding'); return }
+
     setEditError(null)
     if (!form.displayName.trim()) { setEditError('Full name is required.'); return }
     if (!form.contact.trim()) { setEditError('Contact number is required.'); return }
@@ -201,7 +205,7 @@ export default function ProfilePage() {
 
     try {
       await addDoc(collection(db, COLLECTIONS.FEEDBACK), payload)
-      localStorage.setItem(FEEDBACK_STORAGE_KEY, String(Date.now()))
+      localStorage.setItem(feedbackStorageKey, String(Date.now()))
       setCooldownRemaining(FEEDBACK_COOLDOWN_MS / 1000)
       setFeedbackText('')
       setFeedbackOpen(false)
@@ -227,7 +231,7 @@ export default function ProfilePage() {
       } catch {
         // Ignore storage errors
       }
-      localStorage.setItem(FEEDBACK_STORAGE_KEY, String(Date.now()))
+      localStorage.setItem(feedbackStorageKey, String(Date.now()))
       setCooldownRemaining(FEEDBACK_COOLDOWN_MS / 1000)
       setFeedbackText('')
       setFeedbackOpen(false)
@@ -253,7 +257,7 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-black uppercase tracking-wide text-white">Profile</h1>
-        {!editing && (
+        {!editing && profile && (
           <button
             id="profile-edit-btn"
             type="button"
@@ -298,8 +302,24 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* No-profile onboarding CTA */}
+      {!editing && user && !profile && (
+        <div className="rounded-card border border-hairline bg-charcoal p-6 text-center space-y-4">
+          <p className="text-sm font-bold text-white">Complete your profile to get started.</p>
+          <p className="text-xs text-white/50">Set up your profile to book machines, manage checkouts, and access the lab.</p>
+          <button
+            type="button"
+            onClick={() => navigate('/onboarding')}
+            className="tl-pill-button inline-flex items-center gap-2"
+          >
+            <ChevronRight size={16} />
+            Go to Onboarding
+          </button>
+        </div>
+      )}
+
       {/* View Mode */}
-      {!editing && (
+      {!editing && profile && (
         <div className="rounded-card border border-hairline bg-charcoal p-6 space-y-5">
           <p className="text-xs font-black uppercase tracking-widest text-white/40">Details</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

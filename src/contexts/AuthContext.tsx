@@ -71,12 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null)
           setLoading(false)
         }
-      },
-      (error: any) => {
-        console.error("Auth state change error:", error)
-        setUser(null)
-        setProfile(null)
-        setLoading(false)
       }
     )
 

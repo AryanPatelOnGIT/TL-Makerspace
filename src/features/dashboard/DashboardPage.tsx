@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const today = todayStr()
+  const nowTime = new Date().toTimeString().slice(0, 5)
 
   const { data: equipment = [] } = useQuery({
     queryKey: ['equipment', 'all-dashboard'],
@@ -63,7 +64,11 @@ export default function DashboardPage() {
       const snap = await getDocs(q)
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() }) as Booking)
       return list
-        .filter(b => b.status !== 'cancelled')
+        .filter(b => {
+          if (b.status === 'cancelled') return false
+          if (b.date === today && b.endTime < nowTime) return false
+          return true
+        })
         .sort((a, b) => {
           const dateDiff = a.date.localeCompare(b.date)
           if (dateDiff !== 0) return dateDiff

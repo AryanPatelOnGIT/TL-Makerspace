@@ -13,18 +13,27 @@ const rawApiKey = import.meta.env.VITE_FIREBASE_API_KEY ||
     ? atob(import.meta.env.VITE_FIREBASE_API_KEY_B64)
     : undefined)
 
+const isEmulatorMode = import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true'
+
+if (!rawApiKey && !isEmulatorMode) {
+  throw new Error(
+    'Firebase API key is not configured. Set VITE_FIREBASE_API_KEY or VITE_FIREBASE_API_KEY_B64, ' +
+    'or enable emulator mode with VITE_USE_EMULATORS=true.'
+  )
+}
+
 const firebaseConfig = {
-  apiKey: rawApiKey || 'AIzaSyDemoKeyForDevelopmentModeOnly123',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'tinkers-lab-dev.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'tinkers-lab-dev',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'tinkers-lab-dev.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '1234567890',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:1234567890:web:1234567890',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-1234567890',
+  apiKey: rawApiKey || (isEmulatorMode ? 'fake-api-key-emulator' : ''),
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || (isEmulatorMode ? 'localhost' : ''),
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || (isEmulatorMode ? 'demo-project' : ''),
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || (isEmulatorMode ? 'demo-project.appspot.com' : ''),
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || (isEmulatorMode ? '000000000000' : ''),
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || (isEmulatorMode ? '1:000000000000:web:000000000000' : ''),
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || (isEmulatorMode ? 'G-0000000000' : ''),
 }
 
 export const isFirebaseConfigured = Boolean(
-  import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY_B64
+  import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY_B64 || isEmulatorMode
 )
 
 // Initialize Firebase app
