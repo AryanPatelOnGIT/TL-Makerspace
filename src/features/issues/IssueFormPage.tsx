@@ -49,8 +49,7 @@ export default function IssueFormPage() {
       toast.success('Issue reported. Thank you!')
       navigate('/')
     } catch {
-      toast.success('Report submitted. Thank you for notifying us!')
-      navigate('/')
+      toast.error('Failed to submit report. Please try again.')
     }
   }
 

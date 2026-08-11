@@ -81,6 +81,18 @@ export async function getActiveUserCheckouts(userId: string): Promise<ToolChecko
 }
 
 /**
+ * Get ALL checkouts (staff view — including returned).
+ * Returns all checkout records across all users, ordered newest first.
+ */
+export async function getAllCheckouts(): Promise<ToolCheckout[]> {
+  const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
+  const snap = await getDocs(ref)
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }) as ToolCheckout)
+    .sort((a, b) => b.createdAt?.toMillis?.() - a.createdAt?.toMillis?.())
+}
+
+/**
  * Get ALL active checkouts (staff view — for overdue monitoring).
  * Returns all checking_out records where returnedAt is null.
  * Client-side overdue detection: compare expectedReturnDate < today.

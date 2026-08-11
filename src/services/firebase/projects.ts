@@ -51,7 +51,7 @@ export async function createProject(
     status: 'pending',
     imageUrls: [],
     documentUrls: [],
-    teamMembers: data.teamMembers ?? [],
+    teamMembers: data.teamMembers ?? '',
     facultyMentor: data.facultyMentor ?? '',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

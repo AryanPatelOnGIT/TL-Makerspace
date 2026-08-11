@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
-import { getUserCheckoutHistory, getAllActiveCheckouts, returnTool, isCheckoutOverdue } from '@/services/firebase/toolCheckouts'
+import { getUserCheckoutHistory, getAllCheckouts, returnTool, isCheckoutOverdue } from '@/services/firebase/toolCheckouts'
 import { Package, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import type { ToolCheckout } from '@/types'
 import { cn } from '@/lib/utils'
@@ -21,7 +21,7 @@ export default function ToolCheckoutListPage() {
 
   const { data: checkouts = [], isLoading } = useQuery({
     queryKey: ['toolCheckouts', isStaff ? 'all' : user?.uid],
-    queryFn: () => (isStaff ? getAllActiveCheckouts() : getUserCheckoutHistory(user!.uid)),
+    queryFn: () => (isStaff ? getAllCheckouts() : getUserCheckoutHistory(user!.uid)),
     enabled: Boolean(user),
   })
 

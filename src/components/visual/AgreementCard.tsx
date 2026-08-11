@@ -20,7 +20,9 @@ export function AgreementCard({
   className,
   ...props
 }: AgreementCardProps) {
-  const isChecked = Boolean(inputProps.checked)
+  const [localChecked, setLocalChecked] = React.useState(false)
+  const isControlled = 'checked' in inputProps
+  const isChecked = isControlled ? Boolean(inputProps.checked) : localChecked
 
   return (
     <label
@@ -39,6 +41,10 @@ export function AgreementCard({
         type="checkbox"
         aria-invalid={Boolean(error)}
         className={cn('peer sr-only', inputProps.className)}
+        onChange={(e) => {
+          if (!isControlled) setLocalChecked(e.currentTarget.checked)
+          inputProps.onChange?.(e)
+        }}
       />
       
       {/* Styled Checkbox Box */}

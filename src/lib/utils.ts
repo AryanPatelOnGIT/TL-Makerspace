@@ -26,7 +26,8 @@ export function formatRelativeTime(date: any): string {
 }
 
 export function todayStr(): string {
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 export function generateId(prefix: string, count: number): string {
@@ -35,9 +36,14 @@ export function generateId(prefix: string, count: number): string {
 
 export function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
   if (obj === null || typeof obj !== 'object') return obj
+  if (typeof (obj as any)._methodName === 'string') return obj
   const cleaned: Record<string, any> = {}
   for (const [key, value] of Object.entries(obj)) {
     if (value === undefined) continue
+    if (typeof (value as any)?._methodName === 'string') {
+      cleaned[key] = value
+      continue
+    }
     if (
       value !== null &&
       typeof value === 'object' &&

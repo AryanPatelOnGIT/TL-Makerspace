@@ -172,12 +172,13 @@ export default function EquipmentListPage() {
                       {e.location || 'Lab Storage'}
                     </span>
                     {e.status === 'available' && (
-                      <span
+                      <button
+                        type="button"
                         onClick={ev => { ev.stopPropagation(); navigate(`/bookings/new?machine=${e.id}`) }}
                         className="bg-lime text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-lime/90 transition-all shadow-sm"
                       >
                         Book
-                      </span>
+                      </button>
                     )}
                   </div>
                 </div>

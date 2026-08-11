@@ -98,7 +98,7 @@ export default function ProjectListPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(p => (
-            <EntityCard key={p.id} onClick={() => navigate(`/projects/${p.id}`)} className="cursor-pointer p-5 flex flex-col justify-between h-48">
+            <EntityCard key={p.id} as="button" onClick={() => navigate(`/projects/${p.id}`)} className="cursor-pointer p-5 flex flex-col justify-between h-48">
               <div>
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">ID: {p.id.slice(0, 6)}</span>

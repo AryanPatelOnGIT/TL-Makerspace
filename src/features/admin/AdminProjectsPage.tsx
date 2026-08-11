@@ -117,9 +117,9 @@ export default function AdminProjectsPage() {
               <input type="text" placeholder="Search projects…" value={search} onChange={e => setSearch(e.target.value)} className="tl-input pl-11 w-full" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <FilterChip label="All statuses" active={filterStatus === 'all'} onClick={() => setFilterStatus('all')} tone="dark" />
+              <FilterChip label="All statuses" active={filterStatus === 'all'} onClick={() => setFilterStatus('all')} />
               {['pending', 'active', 'completed', 'on_hold', 'rejected'].map(s => (
-                <FilterChip key={s} label={s.replace('_', ' ')} active={filterStatus === s} onClick={() => setFilterStatus(s)} tone="dark" />
+                <FilterChip key={s} label={s.replace('_', ' ')} active={filterStatus === s} onClick={() => setFilterStatus(s)} />
               ))}
             </div>
           </div>

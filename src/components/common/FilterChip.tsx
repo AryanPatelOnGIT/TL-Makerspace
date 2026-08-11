@@ -5,7 +5,6 @@ interface FilterChipProps {
   label: string
   active: boolean
   onClick: () => void
-  tone?: 'light' | 'dark'
 }
 
 export function FilterChip({ label, active, onClick }: FilterChipProps) {

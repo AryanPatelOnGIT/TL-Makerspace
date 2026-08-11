@@ -20,7 +20,7 @@ function getWeekDays(startDate: Date): string[] {
   date.setDate(date.getDate() - date.getDay() + 1)
 
   for (let index = 0; index < 7; index += 1) {
-    days.push(date.toISOString().slice(0, 10))
+    days.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`)
     date.setDate(date.getDate() + 1)
   }
 
@@ -58,7 +58,7 @@ export default function BookingCalendarPage() {
     staleTime: 2 * 60 * 1000,
   })
 
-  const { data: myBookings = [] } = useQuery({
+  const { data: myBookings = [], isLoading: myBookingsLoading } = useQuery({
     queryKey: ['bookings', 'mine'],
     queryFn: async () => {
       const reference = collection(db, COLLECTIONS.BOOKINGS)
@@ -121,9 +121,9 @@ export default function BookingCalendarPage() {
         </div>
 
         <div className="text-xs sm:text-sm font-bold tracking-tight text-white">
-          <span>{new Date(weekDays[0]).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+          <span>{new Date(weekDays[0] + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
           <span className="mx-2 text-white/30">—</span>
-          <span>{new Date(weekDays[6]).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+          <span>{new Date(weekDays[6] + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
         </div>
 
         <Button
@@ -137,7 +137,11 @@ export default function BookingCalendarPage() {
       </div>
 
       <DataPanel title="My Bookings" description="Your personal machine reservations.">
-        {myBookings.length === 0 ? (
+        {myBookingsLoading ? (
+          <div className="flex flex-col items-center gap-3 py-12 text-center text-xs text-white/40">
+            Loading your bookings…
+          </div>
+        ) : myBookings.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center text-xs text-white/40">
             <FileText className="h-8 w-8 opacity-30" />
             <p>No bookings yet.</p>
@@ -211,7 +215,7 @@ export default function BookingCalendarPage() {
                 )}
               >
                 <div className="uppercase font-bold text-[10px]">{day}</div>
-                <div className="text-white font-extrabold text-sm">{new Date(weekDays[index]).getDate()}</div>
+                <div className="text-white font-extrabold text-sm">{new Date(weekDays[index] + 'T00:00:00').getDate()}</div>
               </div>
             ))}
             {HOURS.map(hour => (

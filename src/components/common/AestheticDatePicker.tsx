@@ -84,6 +84,7 @@ export function AestheticDatePicker({
     const mm = String(d.getMonth() + 1).padStart(2, '0')
     const dd = String(d.getDate()).padStart(2, '0')
     const dateStr = `${yyyy}-${mm}-${dd}`
+    if ((minDate && dateStr < minDate) || (maxDate && dateStr > maxDate)) return
     onChange(dateStr)
     setViewDate(d)
     setIsOpen(false)
@@ -99,37 +100,38 @@ export function AestheticDatePicker({
 
   return (
     <div className="relative w-full" ref={popoverRef}>
-      {/* Trigger Input Button */}
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          'w-full h-11 px-3.5 rounded-xl border text-xs font-medium text-left flex items-center justify-between transition-all duration-150',
-          'bg-near-black border-hairline text-white hover:border-white/30 focus:outline-none focus:border-lime shadow-sm',
-          error && 'border-pink text-pink',
-          disabled && 'opacity-50 cursor-not-allowed',
-          className
-        )}
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <CalendarIcon className="h-4 w-4 text-lime shrink-0" />
-          <span className={cn('truncate font-bold', !formattedValue && 'text-white/40 font-normal')}>
-            {formattedValue || placeholder}
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        {/* Trigger Input Button */}
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setIsOpen(!isOpen)}
+          className={cn(
+            'flex-1 h-11 px-3.5 rounded-xl border text-xs font-medium text-left flex items-center justify-between transition-all duration-150',
+            'bg-near-black border-hairline text-white hover:border-white/30 focus:outline-none focus:border-lime shadow-sm',
+            error && 'border-pink text-pink',
+            disabled && 'opacity-50 cursor-not-allowed',
+            className
+          )}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <CalendarIcon className="h-4 w-4 text-lime shrink-0" />
+            <span className={cn('truncate font-bold', !formattedValue && 'text-white/40 font-normal')}>
+              {formattedValue || placeholder}
+            </span>
+          </div>
+        </button>
         {value ? (
-          <span
-            onClick={(e) => {
-              e.stopPropagation()
-              onChange('')
-            }}
-            className="p-1 text-white/40 hover:text-white rounded-md transition-colors"
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="shrink-0 p-2 text-white/40 hover:text-white rounded-md transition-colors border border-transparent hover:border-white/20"
+            aria-label="Clear date"
           >
             <X className="h-3.5 w-3.5" />
-          </span>
+          </button>
         ) : null}
-      </button>
+      </div>
 
       {/* Popover Dark Theme Calendar */}
       {isOpen && (

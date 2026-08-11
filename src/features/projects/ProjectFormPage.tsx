@@ -121,6 +121,8 @@ export default function ProjectFormPage() {
           resourceLink: data.resourceLink || null,
           expectedEquipmentNeeds: data.expectedEquipmentNeeds,
           equipmentNeedsOther: data.equipmentNeedsOther || null,
+          safetyAgreementAccepted: data.safetyAgreementAccepted,
+          termsAccepted: data.termsAccepted,
         }))
         toast.success('Project updated')
         navigate(`/projects/${id}`)
