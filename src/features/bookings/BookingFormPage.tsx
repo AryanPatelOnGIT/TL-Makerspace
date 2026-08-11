@@ -4,13 +4,13 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { collection, query, orderBy, getDocs, where } from 'firebase/firestore'
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { createBooking, getBookingsForSlot } from '@/services/firebase/bookings'
 import { getUserProjects } from '@/services/firebase/projects'
 import { useAuth } from '@/contexts/AuthContext'
-import { ArrowLeft, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, CheckCircle2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn, todayStr } from '@/lib/utils'
 import type { Equipment } from '@/types'
@@ -77,13 +77,15 @@ export default function BookingFormPage() {
   const qc = useQueryClient()
 
   // Only show confirmed Tier 1 (bookable) machines — Spec 2 core decision
-  const { data: machines = [] } = useQuery({
-    queryKey: ['equipment', 'bookable'],
+  const { data: machines = [], isLoading: machinesLoading, isError: machinesError } = useQuery({
+    queryKey: ['equipment', 'all'],
     queryFn: async () => {
       const ref = collection(db, COLLECTIONS.EQUIPMENT)
-      const q   = query(ref, where('tier', '==', 'bookable'), where('confirmed', '==', true), orderBy('name', 'asc'))
+      const q   = query(ref, orderBy('name', 'asc'))
       const snap = await getDocs(q)
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Equipment)
+      return snap.docs
+        .map(d => ({ id: d.id, ...d.data() }) as Equipment)
+        .filter(m => m.tier === 'bookable' && m.confirmed === true)
     },
     staleTime: 15 * 60 * 1000, // 15 min — equipment list rarely changes
   })
@@ -97,7 +99,7 @@ export default function BookingFormPage() {
   })
 
   const {
-    register, handleSubmit, watch, control,
+    register, handleSubmit, watch, control, setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(bookingSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -109,11 +111,17 @@ export default function BookingFormPage() {
   })
 
   const watchEquipmentId = watch('equipmentId')
+  const watchProjectId   = watch('projectId')
   const watchDate        = watch('date')
   const watchStart       = watch('startTime')
   const selectedMachine  = machines.find(m => m.id === watchEquipmentId)
   const is3DPrinter      = selectedMachine?.category === 'Digital Fabrication' && selectedMachine?.name.toLowerCase().includes('printer')
   const isLaserCutter    = selectedMachine?.name.toLowerCase().includes('laser')
+
+  React.useEffect(() => {
+    if (watchProjectId) setValue('equipmentId', '')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchProjectId])
 
   // Existing bookings for this machine + date (for conflict display)
   const { data: existingBookings = [] } = useQuery({
@@ -196,10 +204,10 @@ export default function BookingFormPage() {
         <div className="flex items-start gap-3 rounded-card border border-orange/40 bg-orange/10 p-4">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange" />
           <div>
-            <p className="font-semibold text-sm text-foreground">You need a registered project first</p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="font-semibold text-sm text-white">You need an approved project first</p>
+            <p className="text-xs text-white/50 mt-1">
               All bookings must be linked to an active project.{' '}
-              <button onClick={() => navigate('/projects/new')} className="text-primary underline underline-offset-2">Register a project →</button>
+              <button onClick={() => navigate('/projects/new')} className="text-orange underline underline-offset-2">Register a project →</button>
             </p>
           </div>
         </div>
@@ -211,28 +219,10 @@ export default function BookingFormPage() {
         <FullBleedQuestionCard
           eyebrow="New machine booking"
           title="What will you build next?"
-          description="Choose the machine and registered project first. Available times will appear as soon as the machine is selected."
+          description="Choose your registered project first, then select a machine. Available times will appear once a machine is chosen."
           controls={(
             <>
-              <Field label="Machine" required error={errors.equipmentId?.message}>
-              <select
-                {...register('equipmentId')}
-                className={cn(
-                  'tl-input',
-                  errors.equipmentId && 'border-pink'
-                )}
-              >
-                <option value="">— Select a machine —</option>
-                {machines.filter(m => m.status === 'available' || m.status === 'reserved').map(m => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
-                ))}
-              </select>
-              {machines.length === 0 && (
-                <p className="mt-1 text-xs text-white/55">No confirmed machines available. Contact a coordinator.</p>
-              )}
-            </Field>
-
-            <Field label="Project" required error={errors.projectId?.message}>
+               <Field label="Project" required error={errors.projectId?.message}>
               <select
                 {...register('projectId')}
                 disabled={hasNoProjects}
@@ -246,7 +236,44 @@ export default function BookingFormPage() {
                   <option key={p.id} value={p.id}>{p.id} — {p.title}</option>
                 ))}
               </select>
+              <button
+                type="button"
+                onClick={() => navigate('/projects/new')}
+                className="mt-2 inline-flex items-center gap-1 rounded-full bg-pink px-3 py-1 text-xs font-bold text-black transition-all hover:brightness-110"
+              >
+                <Plus size={12} /> New Project
+              </button>
             </Field>
+
+            {watchProjectId && (
+            <Field label="Machine" required error={errors.equipmentId?.message}>
+              <select
+                {...register('equipmentId')}
+                className={cn(
+                  'tl-input',
+                  errors.equipmentId && 'border-pink'
+                )}
+                disabled={machinesLoading || machinesError || machines.length === 0}
+              >
+                <option value="">— Select a machine —</option>
+                {machines.filter(m => m.status === 'available' || m.status === 'reserved').map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+              {machinesLoading && (
+                <p className="mt-1 text-xs text-white/40">Loading machines…</p>
+              )}
+              {machinesError && (
+                <p className="mt-1 text-xs font-semibold text-orange">Failed to load machines. Check your connection or try refreshing.</p>
+              )}
+              {!machinesLoading && !machinesError && machines.length === 0 && (
+                <p className="mt-1 text-xs font-semibold text-orange">No bookable machines are confirmed in the database. An admin needs to seed equipment first.</p>
+              )}
+              {!machinesLoading && !machinesError && machines.length > 0 && machines.filter(m => m.status === 'available' || m.status === 'reserved').length === 0 && (
+                <p className="mt-1 text-xs font-semibold text-orange">All machines are currently unavailable. Check back later or contact a coordinator.</p>
+              )}
+            </Field>
+            )}
             </>
           )}
         />

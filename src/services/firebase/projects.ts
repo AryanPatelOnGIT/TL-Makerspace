@@ -72,7 +72,7 @@ export async function getUserProjects(userId: string): Promise<Project[]> {
   const q = query(
     ref,
     where('userId', '==', userId),
-    where('status', 'in', ['pending', 'active'])
+    where('status', '==', 'active')
   )
   const snap = await getDocs(q)
   return snap.docs
@@ -90,7 +90,7 @@ export async function userHasActiveProject(userId: string): Promise<boolean> {
   const q = query(
     ref,
     where('userId', '==', userId),
-    where('status', 'in', ['pending', 'active'])
+    where('status', '==', 'active')
   )
   const snap = await getCountFromServer(q)
   return snap.data().count > 0
