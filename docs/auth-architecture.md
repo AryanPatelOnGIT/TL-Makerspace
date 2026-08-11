@@ -88,6 +88,7 @@ interface UserProfile {
 1. **`LoginPage.tsx`**:
    * Removed standard email/password login inputs.
    * Prominent "Continue with Google" button as the primary action.
+   * Layout is constrained to the viewport height (`100svh`) so no scrolling is needed; the hero image scales to a square that fits the screen and the content top-aligns and scrolls internally on short mobile screens.
 2. **`OnboardingPage.tsx`** (formerly `RegisterPage.tsx`):
    * Serves as the profile setup screen.
    * Reads pre-filled user details (email and name) from `useAuth()`.
@@ -99,7 +100,14 @@ interface UserProfile {
    * Edit Mode: Allows editing profile details (excluding roles, status, and terms/safety agreements).
    * Missing Profile: Authenticated users without a profile document see an onboarding call-to-action that routes to `/onboarding` instead of editable profile controls.
    * Feedback panel: Allows submitting text feedback up to 200 words, rate-limited to 5 minutes between submissions. The cooldown is tracked per user via a `localStorage` key (`tl_feedback_lastSentAt_{uid}`) so one account's submission does not affect another's.
+   * Admin Panel entry: Staff/admin users see an "Admin Panel" card (visible only when `isStaff`) that routes to `/admin` — this is the primary admin entry point on mobile, where the desktop sidebar is hidden.
    * Logout button: Explicitly signs out of Firebase Auth and redirects to `/login`.
+
+## App Shell Navigation (`AppLayout.tsx`)
+
+* **Mobile header**: Shows the brand lockup and profile avatar on every page. A back arrow appears only inside the admin panel (`/admin*`) so users can return to the previous page; all other pages rely on the bottom tab bar for navigation.
+* **Desktop sidebar**: Sticky within the viewport (`self-start`) so the navigation and user card remain visible while the main content scrolls.
+* **Sign out**: Available as a compact purple icon button in the desktop sidebar footer (replacing the previous text link).
 
 ## Auth Context (AuthContext.tsx)
 

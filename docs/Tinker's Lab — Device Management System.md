@@ -189,10 +189,10 @@ Apps Script sends reminder email 24hrs before booking
 
 **Title:** Tinker's Lab — Book a Machine
 
-**Fields:**
+**Fields (current build):**
 
-1. Email — Short answer, Required, Email validation
-2. Machine — Dropdown, Required
+1. Project — Dropdown, Required (only admin-approved/active projects are listed)
+2. Machine — Dropdown, Required, appears after a project is selected
     - Bambu Labs 3D Printer (X-1C)
     - Creality Dual Nozzle 3D Printer
     - Success Laser Cutter
@@ -212,6 +212,8 @@ Apps Script sends reminder email 24hrs before booking
 5. End Time — Time, Required
 6. Purpose of Use — Paragraph, Required
 7. Additional Notes — Paragraph, Optional
+
+> **Flow note:** booking requires a project first. Only active (approved) projects are shown, and a "New Project" shortcut lets users create one without leaving the form.
 
 ---
 

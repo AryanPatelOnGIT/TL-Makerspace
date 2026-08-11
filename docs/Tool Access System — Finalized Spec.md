@@ -50,9 +50,16 @@ This also sets up the database backend needed for future analytics (who uses the
 
 **Applies to:** Bambu Lab X1 Carbon, Creality Ender 3 V3, Phrozen Sonic Mighty 12K, Laser Cutter — the 4 machines confirmed in the actual TL inventory (the longer "Tier 1" list from the original plan, e.g. lathe, table saw, muffle furnace, was from a quotation and isn't confirmed as physically present yet).
 
+**Implemented booking flow (current build):**
+
+- A registered **project** is required before any machine can be selected. The form lists **only active (admin-approved) projects** — pending/rejected/completed projects never appear.
+- A "New Project" button sits under the project field so users without an approved project can create one in the same flow.
+- The machine dropdown appears only after a project is selected; changing the project clears the machine selection.
+- Bookable machines are those with `tier === 'bookable'` and `confirmed === true` (fetched from all equipment and filtered client-side to avoid Firestore composite-index requirements).
+
 | Field | Type | Notes |
 | --- | --- | --- |
-| Email | Short answer, validated | Universal key — triggers auto-lookup of user details from Form 1 |
+| Project | Dropdown | Active (approved) projects only; required before machine selection |
 | Machine | Dropdown | Bambu Lab X1 Carbon / Creality Ender 3 V3 / Phrozen Sonic Mighty 12K / Laser Cutter |
 | Booking Date, Start Time, End Time | Date/Time pickers | Required |
 | Purpose of Use | Paragraph | Required |
