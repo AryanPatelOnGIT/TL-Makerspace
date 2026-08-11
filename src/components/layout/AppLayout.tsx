@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Box, Calendar, LayoutDashboard, LogOut, MessageSquare, ShieldCheck, Wrench } from 'lucide-react'
+import { ArrowLeft, Box, Calendar, LayoutDashboard, LogOut, MessageSquare, ShieldCheck, Wrench } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { signOut } from '@/services/firebase/auth'
 import { cn } from '@/lib/utils'
@@ -37,10 +37,21 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-hairline bg-black px-4 md:hidden">
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-hairline bg-black px-4 md:hidden">
+        {location.pathname.startsWith('/admin') && (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-near-black text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft size={18} />
+          </button>
+        )}
         <button type="button" onClick={() => navigate('/')} aria-label="Go to dashboard">
           <BrandLockup compact />
         </button>
+        <div className="flex-1" />
         <button
           type="button"
           onClick={() => navigate('/profile')}
@@ -54,7 +65,7 @@ export default function AppLayout() {
       </header>
 
       <div className="mx-auto flex min-h-screen w-full max-w-[1440px] gap-0 md:p-6">
-        <aside className="hidden w-60 shrink-0 flex-col rounded-card bg-charcoal p-4 md:flex md:min-h-[calc(100vh-3rem)] md:sticky md:top-6">
+        <aside className="hidden w-60 shrink-0 flex-col rounded-card bg-charcoal p-4 md:flex md:min-h-[calc(100vh-3rem)] md:sticky md:top-6 md:self-start">
           <button
             type="button"
             onClick={() => navigate('/')}
@@ -115,11 +126,15 @@ export default function AppLayout() {
             </button>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-white">{profile?.displayName || 'Lab member'}</p>
-              <button type="button" onClick={handleSignOut} className="mt-0.5 text-xs font-semibold text-pink hover:underline">
-                Sign out
-              </button>
             </div>
-            <LogOut className="h-4 w-4 text-white/35" aria-hidden="true" />
+            <button
+              type="button"
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo text-white transition-colors hover:bg-indigo-light"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         </aside>
 

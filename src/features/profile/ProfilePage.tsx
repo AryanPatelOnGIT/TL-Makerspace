@@ -9,6 +9,7 @@ import {
   ChevronRight,
   AlertCircle,
   Loader2,
+  ShieldCheck,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { updateUserProfile, signOut } from '@/services/firebase/auth'
@@ -65,7 +66,7 @@ function Field({
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { user, profile, refetchProfile } = useAuth()
+  const { user, profile, refetchProfile, isStaff } = useAuth()
 
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -599,6 +600,24 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Admin Panel */}
+      {isStaff && (
+        <button
+          type="button"
+          onClick={() => navigate('/admin')}
+          className="flex w-full items-center justify-between rounded-card border border-hairline bg-charcoal px-6 py-4 text-left transition-colors hover:bg-white/5"
+        >
+          <div className="flex items-center gap-3">
+            <ShieldCheck size={18} className="text-indigo" />
+            <div>
+              <p className="text-sm font-bold text-white">Admin Panel</p>
+              <p className="text-xs text-white/40">Manage users, bookings, and inventory</p>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-white/30" />
+        </button>
+      )}
 
       {/* Log Out */}
       <button
