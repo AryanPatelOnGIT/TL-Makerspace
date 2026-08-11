@@ -41,10 +41,17 @@ export function AestheticDatePicker({
         setIsOpen(false)
       }
     }
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsOpen(false)
+    }
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscape)
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
   }, [isOpen])
 
   const year = viewDate.getFullYear()
@@ -90,6 +97,16 @@ export function AestheticDatePicker({
     setIsOpen(false)
   }
 
+  const isPresetDisabled = (daysToAdd: number) => {
+    const d = new Date()
+    d.setDate(d.getDate() + daysToAdd)
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    const dateStr = `${yyyy}-${mm}-${dd}`
+    return Boolean((minDate && dateStr < minDate) || (maxDate && dateStr > maxDate))
+  }
+
   const formattedValue = value
     ? new Date(value + 'T00:00:00').toLocaleDateString('en-IN', {
         day: '2-digit',
@@ -106,6 +123,8 @@ export function AestheticDatePicker({
           type="button"
           disabled={disabled}
           onClick={() => setIsOpen(!isOpen)}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
           className={cn(
             'flex-1 h-11 px-3.5 rounded-xl border text-xs font-medium text-left flex items-center justify-between transition-all duration-150',
             'bg-near-black border-hairline text-white hover:border-white/30 focus:outline-none focus:border-lime shadow-sm',
@@ -135,27 +154,39 @@ export function AestheticDatePicker({
 
       {/* Popover Dark Theme Calendar */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-72 p-4 rounded-card border border-hairline bg-near-black text-white shadow-2xl animate-fade-in left-0">
+        <div className="absolute z-50 mt-2 w-72 p-4 rounded-card border border-hairline bg-near-black text-white shadow-2xl animate-fade-in left-0" role="dialog" aria-label="Date picker">
           {/* Quick Presets */}
           <div className="flex items-center gap-1.5 pb-3 mb-3 border-b border-hairline">
             <button
               type="button"
               onClick={() => handlePreset(0)}
-              className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-md bg-white/5 hover:bg-lime hover:text-black transition-all"
+              disabled={isPresetDisabled(0)}
+              className={cn(
+                'px-2.5 py-1 text-[10px] font-bold uppercase rounded-md bg-white/5 hover:bg-lime hover:text-black transition-all',
+                isPresetDisabled(0) && 'opacity-30 cursor-not-allowed hover:bg-white/5 hover:text-white'
+              )}
             >
               Today
             </button>
             <button
               type="button"
               onClick={() => handlePreset(1)}
-              className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-md bg-white/5 hover:bg-lime hover:text-black transition-all"
+              disabled={isPresetDisabled(1)}
+              className={cn(
+                'px-2.5 py-1 text-[10px] font-bold uppercase rounded-md bg-white/5 hover:bg-lime hover:text-black transition-all',
+                isPresetDisabled(1) && 'opacity-30 cursor-not-allowed hover:bg-white/5 hover:text-white'
+              )}
             >
               Tomorrow
             </button>
             <button
               type="button"
               onClick={() => handlePreset(7)}
-              className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-md bg-white/5 hover:bg-lime hover:text-black transition-all"
+              disabled={isPresetDisabled(7)}
+              className={cn(
+                'px-2.5 py-1 text-[10px] font-bold uppercase rounded-md bg-white/5 hover:bg-lime hover:text-black transition-all',
+                isPresetDisabled(7) && 'opacity-30 cursor-not-allowed hover:bg-white/5 hover:text-white'
+              )}
             >
               Next Week
             </button>
@@ -217,6 +248,9 @@ export function AestheticDatePicker({
                   type="button"
                   disabled={isDisabled}
                   onClick={() => handleSelectDay(dayNum)}
+                  aria-label={`${monthNames[month]} ${dayNum}, ${year}`}
+                  {...(isToday ? { 'aria-current': 'date' as const } : {})}
+                  {...(isSelected ? { 'aria-selected': true } : {})}
                   className={cn(
                     'h-8 w-8 text-xs font-bold rounded-lg flex items-center justify-center transition-all',
                     isSelected

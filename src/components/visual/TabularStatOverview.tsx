@@ -38,10 +38,12 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
           const Icon = item.icon
           const accent = ACCENT_STYLES[item.accent] || ACCENT_STYLES.pink
 
+          const Component = item.onClick ? 'button' : 'div'
+
           return (
-            <button
+            <Component
               key={item.id}
-              type="button"
+              type={item.onClick ? 'button' : undefined}
               onClick={item.onClick}
               className="group flex flex-col justify-between p-4 lg:p-5 text-left hover:bg-white/[0.04] focus:bg-white/[0.05] focus:outline-none transition-colors duration-150"
             >
@@ -69,7 +71,7 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
                   </p>
                 )}
               </div>
-            </button>
+            </Component>
           )
         })}
       </div>

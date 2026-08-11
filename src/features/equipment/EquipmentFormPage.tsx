@@ -104,6 +104,7 @@ export default function EquipmentFormPage() {
       } else {
         const docRef = await addDoc(collection(db, COLLECTIONS.EQUIPMENT), payload)
         toast.success('Equipment added')
+        queryClient.invalidateQueries({ queryKey: ['equipment'] })
         navigate(`/equipment/${docRef.id}`)
         return
       }

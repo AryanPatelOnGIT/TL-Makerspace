@@ -16,7 +16,6 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const today = todayStr()
-  const nowTime = new Date().toTimeString().slice(0, 5)
 
   const { data: equipment = [] } = useQuery({
     queryKey: ['equipment', 'all-dashboard'],
@@ -56,6 +55,8 @@ export default function DashboardPage() {
   const { data: upcomingBookings = [] } = useQuery({
     queryKey: ['bookings', 'upcoming', user?.uid],
     queryFn: async () => {
+      const today = todayStr()
+      const nowTime = new Date().toTimeString().slice(0, 5)
       const q = query(
         collection(db, COLLECTIONS.BOOKINGS),
         where('userId', '==', user!.uid),
@@ -164,7 +165,7 @@ export default function DashboardPage() {
               detail: overdueCount ? `${overdueCount} need attention` : 'Everything is on schedule',
               accent: 'orange',
               icon: Box,
-              onClick: () => navigate('/inventory'),
+              onClick: () => navigate('/checkout/history'),
             },
             {
               id: 'active-projects',

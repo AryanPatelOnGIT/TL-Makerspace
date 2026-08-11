@@ -75,7 +75,7 @@ export default function ToolCheckoutListPage() {
       <PageHeader
         variant="dark"
         title={isStaff ? 'All Tool Checkouts' : 'My Tool Checkouts'}
-        description={isStaff ? 'Staff view — active tool checkouts across all lab users.' : 'Your tool checkout and return history.'}
+        description={isStaff ? 'All tool checkouts across lab users — including returned items.' : 'Your tool checkout and return history.'}
         action={
           <button
             onClick={() => navigate('/checkout')}

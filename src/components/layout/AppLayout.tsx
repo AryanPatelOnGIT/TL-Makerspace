@@ -1,7 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Box, Calendar, LayoutDashboard, LogOut, MessageSquare, ShieldCheck, Wrench } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { signOut } from '@/services/firebase/auth'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { BrandLockup, FlowerMark } from '@/components/visual'
@@ -21,6 +20,7 @@ export default function AppLayout() {
 
   const handleSignOut = async () => {
     try {
+      const { signOut } = await import('@/services/firebase/auth')
       await signOut()
       navigate('/login')
     } catch {

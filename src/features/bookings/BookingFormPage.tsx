@@ -78,7 +78,7 @@ export default function BookingFormPage() {
 
   // Only show confirmed Tier 1 (bookable) machines — Spec 2 core decision
   const { data: machines = [], isLoading: machinesLoading, isError: machinesError } = useQuery({
-    queryKey: ['equipment', 'all'],
+    queryKey: ['equipment', 'bookable-confirmed'],
     queryFn: async () => {
       const ref = collection(db, COLLECTIONS.EQUIPMENT)
       const q   = query(ref, orderBy('name', 'asc'))
@@ -117,9 +117,15 @@ export default function BookingFormPage() {
   const selectedMachine  = machines.find(m => m.id === watchEquipmentId)
   const is3DPrinter      = selectedMachine?.category === 'Digital Fabrication' && selectedMachine?.name.toLowerCase().includes('printer')
   const isLaserCutter    = selectedMachine?.name.toLowerCase().includes('laser')
+  const selectableMachines = machines.filter(m => m.status === 'available' || m.status === 'reserved')
+
+  const prevProjectId = React.useRef<string | undefined>(undefined)
 
   React.useEffect(() => {
-    if (watchProjectId) setValue('equipmentId', '')
+    if (prevProjectId.current !== undefined && watchProjectId !== prevProjectId.current) {
+      setValue('equipmentId', '')
+    }
+    prevProjectId.current = watchProjectId
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchProjectId])
 
@@ -256,7 +262,7 @@ export default function BookingFormPage() {
                 disabled={machinesLoading || machinesError || machines.length === 0}
               >
                 <option value="">— Select a machine —</option>
-                {machines.filter(m => m.status === 'available' || m.status === 'reserved').map(m => (
+                {selectableMachines.map(m => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
               </select>
@@ -269,7 +275,7 @@ export default function BookingFormPage() {
               {!machinesLoading && !machinesError && machines.length === 0 && (
                 <p className="mt-1 text-xs font-semibold text-orange">No bookable machines are confirmed in the database. An admin needs to seed equipment first.</p>
               )}
-              {!machinesLoading && !machinesError && machines.length > 0 && machines.filter(m => m.status === 'available' || m.status === 'reserved').length === 0 && (
+              {!machinesLoading && !machinesError && machines.length > 0 && selectableMachines.length === 0 && (
                 <p className="mt-1 text-xs font-semibold text-orange">All machines are currently unavailable. Check back later or contact a coordinator.</p>
               )}
             </Field>

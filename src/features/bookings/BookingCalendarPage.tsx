@@ -17,7 +17,7 @@ import { DataPanel } from '@/components/common/DataPanel'
 function getWeekDays(startDate: Date): string[] {
   const days = []
   const date = new Date(startDate)
-  date.setDate(date.getDate() - date.getDay() + 1)
+  date.setDate(date.getDate() - (date.getDay() + 6) % 7)
 
   for (let index = 0; index < 7; index += 1) {
     days.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`)
@@ -34,7 +34,7 @@ export default function BookingCalendarPage() {
   const navigate = useNavigate()
   const [weekStart, setWeekStart] = useState(() => {
     const date = new Date()
-    date.setDate(date.getDate() - date.getDay() + 1)
+    date.setDate(date.getDate() - (date.getDay() + 6) % 7)
     return date
   })
 
@@ -78,7 +78,7 @@ export default function BookingCalendarPage() {
 
   const showCurrentWeek = () => {
     const date = new Date()
-    date.setDate(date.getDate() - date.getDay() + 1)
+    date.setDate(date.getDate() - (date.getDay() + 6) % 7)
     setWeekStart(date)
   }
 
@@ -223,14 +223,14 @@ export default function BookingCalendarPage() {
                 <div className="col-span-1 border-r border-t border-hairline bg-white/[0.01] p-2.5 text-[10px] text-white/40 font-mono flex items-center justify-center tracking-wider">
                   {hour}
                 </div>
-                {weekDays.map(day => {
+                {weekDays.map((day, index) => {
                   const slotBookings = bookings.filter(booking => booking.date === day && booking.startTime <= hour && booking.endTime > hour)
                   return (
                     <div
                       key={day}
                       className={cn(
                         'relative flex min-h-[48px] flex-col gap-1 border-r border-t border-hairline p-1.5',
-                        weekDays.indexOf(day) + 1 === new Date().getDay() && 'bg-white/[0.01]'
+                        weekDays[index] === todayStr() ? 'bg-white/[0.02]' : ''
                       )}
                     >
                       {slotBookings.map(booking => (

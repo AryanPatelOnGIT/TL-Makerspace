@@ -12,6 +12,7 @@ export function FilterChip({ label, active, onClick }: FilterChipProps) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         'px-3.5 py-1.5 rounded-full font-bold tracking-wide text-xs transition-all duration-150 select-none',
         active

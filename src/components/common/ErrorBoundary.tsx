@@ -62,19 +62,21 @@ export class ErrorBoundary extends Component<Props, State> {
             <p style={{ color: '#A1A1AA', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
               The application encountered an unexpected error during rendering.
             </p>
-            {this.state.error && (
-              <pre style={{
-                backgroundColor: '#000000',
-                border: '1px solid #272727',
-                borderRadius: '8px',
-                padding: '1rem',
-                fontSize: '0.8rem',
-                textAlign: 'left',
-                overflowX: 'auto',
-                color: '#FFB249',
-                marginBottom: '1.5rem',
-                maxHeight: '200px'
-              }}>
+            {import.meta.env.DEV && this.state.error && (
+              <pre
+                style={{
+                  backgroundColor: '#000000',
+                  border: '1px solid #272727',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  fontSize: '0.8rem',
+                  textAlign: 'left',
+                  overflowX: 'auto',
+                  color: '#FFB249',
+                  marginBottom: '1.5rem',
+                  maxHeight: '200px',
+                }}
+              >
                 {this.state.error.toString()}
               </pre>
             )}

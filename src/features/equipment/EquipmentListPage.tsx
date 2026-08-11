@@ -138,7 +138,7 @@ export default function EquipmentListPage() {
             const dotColorClass = isDown ? 'bg-pink' : pulse ? 'bg-orange animate-pulse' : 'bg-lime'
 
             return (
-              <EntityCard key={e.id} as="button" onClick={() => navigate(`/equipment/${e.id}`)}>
+              <EntityCard key={e.id}>
                 <div className="aspect-[16/10] relative bg-black/60 overflow-hidden shrink-0 border-b border-hairline">
                   {e.imageUrls?.[0] ? (
                     <img src={e.imageUrls[0]} alt={e.name} className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
@@ -162,24 +162,39 @@ export default function EquipmentListPage() {
                     <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-1">
                       {CATEGORY_LABELS[e.category] ?? e.category}
                     </span>
-                    <h3 className="text-base font-bold text-white mb-2 leading-snug group-hover:text-lime transition-colors">
-                      {e.name}
-                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/equipment/${e.id}`)}
+                      className="text-left w-full group/link"
+                    >
+                      <h3 className="text-base font-bold text-white mb-2 leading-snug group-hover/link:text-lime transition-colors">
+                        {e.name}
+                      </h3>
+                    </button>
                   </div>
                   
                   <div className="mt-4 flex items-center justify-between pt-3 border-t border-hairline/50">
                     <span className="text-[11px] text-white/50 font-medium truncate">
                       {e.location || 'Lab Storage'}
                     </span>
-                    {e.status === 'available' && (
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={ev => { ev.stopPropagation(); navigate(`/bookings/new?machine=${e.id}`) }}
-                        className="bg-lime text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-lime/90 transition-all shadow-sm"
+                        onClick={() => navigate(`/equipment/${e.id}`)}
+                        className="text-white/40 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
                       >
-                        Book
+                        View
                       </button>
-                    )}
+                      {e.status === 'available' && (
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/bookings/new?machine=${e.id}`)}
+                          className="bg-lime text-black px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-lime/90 transition-all shadow-sm"
+                        >
+                          Book
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </EntityCard>

@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from './firestore'
+import { todayStr } from '@/lib/utils'
 import type { ToolCheckout, ToolCondition } from '@/types'
 
 // ============================================================
@@ -146,8 +147,7 @@ export async function getUserCheckoutHistory(userId: string): Promise<ToolChecko
  */
 export function isCheckoutOverdue(checkout: ToolCheckout): boolean {
   if (checkout.returnedAt) return false
-  const today = new Date().toISOString().split('T')[0] // "YYYY-MM-DD"
-  return checkout.expectedReturnDate < today
+  return checkout.expectedReturnDate < todayStr()
 }
 
 /**

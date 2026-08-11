@@ -77,7 +77,7 @@ export default function ProjectFormPage() {
   })
 
   const {
-    register, handleSubmit, reset, watch, control,
+    register, handleSubmit, reset, setValue, watch, control,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema) as any,
@@ -96,7 +96,7 @@ export default function ProjectFormPage() {
         abstract: existing.abstract,
         contact:  existing.contact,
         startDate: existing.startDate,
-        endDate:   existing.endDate,
+        endDate:   existing.endDate ?? '',
         resourceLink: existing.resourceLink ?? '',
         expectedEquipmentNeeds: existing.expectedEquipmentNeeds ?? [],
         equipmentNeedsOther: existing.equipmentNeedsOther ?? '',
@@ -339,7 +339,7 @@ export default function ProjectFormPage() {
               inputProps={{
                 checked: watch('safetyAgreementAccepted'),
                 onChange: (e) => {
-                  reset({ ...watch(), safetyAgreementAccepted: e.target.checked })
+                  setValue('safetyAgreementAccepted', e.target.checked, { shouldValidate: true })
                 },
               }}
               error={errors.safetyAgreementAccepted?.message}
@@ -352,7 +352,7 @@ export default function ProjectFormPage() {
               inputProps={{
                 checked: watch('termsAccepted'),
                 onChange: (e) => {
-                  reset({ ...watch(), termsAccepted: e.target.checked })
+                  setValue('termsAccepted', e.target.checked, { shouldValidate: true })
                 },
               }}
               error={errors.termsAccepted?.message}

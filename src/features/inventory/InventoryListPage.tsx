@@ -73,6 +73,7 @@ export default function InventoryListPage() {
               <input
                 type="text"
                 placeholder="Search inventory..."
+                aria-label="Search inventory"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="w-full h-10 pl-10 pr-4 rounded-xl bg-near-black border border-hairline text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-white/30"
@@ -174,7 +175,7 @@ export default function InventoryListPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-white/40 hover:text-white opacity-0 group-hover:opacity-100 rounded-full hover:bg-white/10 text-xs transition-all"
+                        className="text-white/40 hover:text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-lime rounded-full hover:bg-white/10 text-xs transition-all"
                         onClick={e => { e.stopPropagation(); navigate(`/inventory/${item.id}`) }}
                       >
                         View

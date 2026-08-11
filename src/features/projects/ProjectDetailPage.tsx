@@ -21,14 +21,21 @@ const STATUS_LABEL: Record<string, string> = {
   pending: 'Pending', active: 'Active', completed: 'Completed', on_hold: 'On Hold', rejected: 'Rejected',
 }
 
-function DetailRow({ label, value, icon: Icon }: { label: string; value?: string; icon?: React.ComponentType<{ className?: string }> }) {
+function DetailRow({ label, value, icon: Icon, href }: { label: string; value?: string; icon?: React.ComponentType<{ className?: string }>; href?: string }) {
   if (!value) return null
+  const displayValue = typeof value === 'string' ? value : String(value)
   return (
     <div className="flex items-start gap-3">
       {Icon && <Icon className="mt-0.5 h-4 w-4 shrink-0 text-white/30" />}
       <div className="min-w-0">
         <p className="text-xs font-bold uppercase tracking-wider text-white/40">{label}</p>
-        <p className="text-sm font-semibold text-white">{value}</p>
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-lime hover:underline break-all">
+            {displayValue}
+          </a>
+        ) : (
+          <p className="text-sm font-semibold text-white">{displayValue}</p>
+        )}
       </div>
     </div>
   )
@@ -93,11 +100,11 @@ export default function ProjectDetailPage() {
           <DetailRow icon={Phone} label="Contact" value={project.contact} />
           <DetailRow icon={Building} label="Department" value={project.department} />
           <DetailRow icon={IdCard} label="University ID" value={project.universityId} />
-          <DetailRow icon={Users} label="Team members" value={project.teamMembers} />
+          <DetailRow icon={Users} label="Team members" value={typeof project.teamMembers === 'string' ? project.teamMembers : ''} />
           <DetailRow icon={Users} label="Faculty mentor" value={project.facultyMentor} />
           <DetailRow icon={Calendar} label="Start date" value={project.startDate} />
           <DetailRow icon={Clock} label="End date" value={project.endDate} />
-          <DetailRow icon={Link2} label="Resource link" value={project.resourceLink} />
+          <DetailRow icon={Link2} label="Resource link" value={project.resourceLink} href={project.resourceLink} />
         </div>
 
         {project.rejectionReason && (

@@ -20,7 +20,7 @@ export function AgreementCard({
   className,
   ...props
 }: AgreementCardProps) {
-  const [localChecked, setLocalChecked] = React.useState(false)
+  const [localChecked, setLocalChecked] = React.useState(Boolean(inputProps.defaultChecked))
   const isControlled = 'checked' in inputProps
   const isChecked = isControlled ? Boolean(inputProps.checked) : localChecked
 
@@ -52,6 +52,7 @@ export function AgreementCard({
         aria-hidden="true"
         className={cn(
           'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-black transition-all duration-150',
+          'peer-focus-visible:ring-2 peer-focus-visible:ring-lime peer-focus-visible:ring-offset-1 ring-offset-near-black',
           isChecked
             ? 'border-lime bg-lime text-black font-extrabold shadow-sm'
             : 'border-white/30 bg-white/5 hover:border-white/50 text-transparent'

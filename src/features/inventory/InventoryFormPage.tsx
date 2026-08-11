@@ -75,7 +75,7 @@ export default function InventoryFormPage() {
     const payload = cleanFirestoreData({ ...data, status })
     try {
       if (isEdit) { await updateDoc(doc(db, COLLECTIONS.INVENTORY, id!), payload); toast.success('Updated') }
-      else { const docRef = await addDoc(collection(db, COLLECTIONS.INVENTORY), payload); toast.success('Added'); navigate(`/inventory/${docRef.id}`); return }
+      else { const docRef = await addDoc(collection(db, COLLECTIONS.INVENTORY), payload); toast.success('Added'); qc.invalidateQueries({ queryKey: ['inventory'] }); navigate(`/inventory/${docRef.id}`); return }
       qc.invalidateQueries({ queryKey: ['inventory'] })
       navigate(`/inventory/${id}`)
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed') }

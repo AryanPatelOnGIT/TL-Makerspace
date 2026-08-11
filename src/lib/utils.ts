@@ -53,9 +53,11 @@ export function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
     ) {
       cleaned[key] = cleanFirestoreData(value)
     } else if (Array.isArray(value)) {
-      cleaned[key] = value.filter(item => item !== undefined).map(item =>
-        typeof item === 'object' && item !== null ? cleanFirestoreData(item) : item
-      )
+      cleaned[key] = value.filter(item => item !== undefined).map(item => {
+        if (item === null || typeof item !== 'object') return item
+        if (item instanceof Date || typeof (item as any).toMillis === 'function') return item
+        return cleanFirestoreData(item)
+      })
     } else {
       cleaned[key] = value
     }

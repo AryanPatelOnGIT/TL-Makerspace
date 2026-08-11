@@ -33,7 +33,8 @@ const firebaseConfig = {
 }
 
 export const isFirebaseConfigured = Boolean(
-  import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY_B64 || isEmulatorMode
+  (import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY_B64) &&
+  (!isEmulatorMode ? (import.meta.env.VITE_FIREBASE_PROJECT_ID && import.meta.env.VITE_FIREBASE_APP_ID) : true)
 )
 
 // Initialize Firebase app

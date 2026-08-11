@@ -66,7 +66,7 @@ function Field({
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { user, profile, refetchProfile, isStaff } = useAuth()
+  const { user, profile, refetchProfile, isStaff, isAdmin } = useAuth()
 
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -218,31 +218,7 @@ export default function ProfilePage() {
         if (r <= 0 && cooldownRef.current) clearInterval(cooldownRef.current)
       }, 1000)
     } catch {
-      // Fallback: save locally so feedback is never lost and user gets a clean success toast
-      try {
-        const pending = JSON.parse(localStorage.getItem('pending_feedback') || '[]')
-        pending.push({
-          userId: user.uid,
-          userEmail: user.email || '',
-          userName: profile?.displayName || user.displayName || 'Lab Member',
-          message: feedbackText.trim(),
-          createdAt: new Date().toISOString(),
-        })
-        localStorage.setItem('pending_feedback', JSON.stringify(pending))
-      } catch {
-        // Ignore storage errors
-      }
-      localStorage.setItem(feedbackStorageKey, String(Date.now()))
-      setCooldownRemaining(FEEDBACK_COOLDOWN_MS / 1000)
-      setFeedbackText('')
-      setFeedbackOpen(false)
-      toast.success('Feedback received! Thank you.')
-      if (cooldownRef.current) clearInterval(cooldownRef.current)
-      cooldownRef.current = setInterval(() => {
-        const r = computeRemaining()
-        setCooldownRemaining(r)
-        if (r <= 0 && cooldownRef.current) clearInterval(cooldownRef.current)
-      }, 1000)
+      toast.error('Failed to send feedback. Please try again.')
     } finally {
       setFeedbackSubmitting(false)
     }
@@ -602,7 +578,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Admin Panel */}
-      {isStaff && (
+      {isAdmin && (
         <button
           type="button"
           onClick={() => navigate('/admin')}

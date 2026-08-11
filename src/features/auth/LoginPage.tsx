@@ -22,7 +22,10 @@ export default function LoginPage() {
       toast.success('Signed in successfully')
     } catch (e) {
       console.error('GOOGLE SIGN IN ERROR:', e)
-      setError(e instanceof Error ? e.message : 'Google sign-in failed')
+      const msg = e instanceof Error ? e.message : 'Google sign-in failed'
+      if (!msg.includes('Redirecting')) {
+        setError(msg)
+      }
     } finally {
       setGoogleLoading(false)
     }
@@ -39,7 +42,13 @@ export default function LoginPage() {
       <section className="relative z-10 flex-1 min-h-0 overflow-y-auto grid lg:grid-cols-[1.05fr_0.72fr] gap-10 lg:gap-16 items-center px-6 lg:px-14 pb-6 max-lg:grid-cols-1 max-lg:items-start max-lg:gap-5">
         <div className="min-w-0">
           <div className="mx-auto w-full max-w-[min(86svh,1260px)] max-lg:max-w-[min(34svh,220px)] overflow-hidden rounded-card border border-hairline aspect-square">
-            <img src={dashboardArt} alt="Tinkerers Lab workspace" className="w-full h-full object-cover block" />
+            <img
+              src={dashboardArt}
+              alt="Tinkerers Lab workspace"
+              className="w-full h-full object-cover block"
+              loading="eager"
+              fetchPriority="high"
+            />
           </div>
         </div>
 
