@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { collection, query, orderBy, getDocs, doc, runTransaction } from 'firebase/firestore'
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
   })
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: typedZodResolver(schema),
     defaultValues: { type: 'issue', quantity: 1 },
   })
 

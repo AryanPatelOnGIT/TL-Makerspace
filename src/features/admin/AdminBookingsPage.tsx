@@ -11,6 +11,8 @@ import type { Booking } from '@/types'
 import { PageHeader } from '@/components/common/PageHeader'
 import { FilterChip } from '@/components/common/FilterChip'
 import { DataPanel } from '@/components/common/DataPanel'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const STATUS_COLOR: Record<string, string> = {
@@ -24,6 +26,9 @@ export default function AdminBookingsPage() {
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [actionLoading, setActionLoading] = useState(false)
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['admin', 'bookings'],
@@ -39,11 +44,20 @@ export default function AdminBookingsPage() {
     return matchSearch && (filterStatus === 'all' || b.status === filterStatus)
   })
 
-  const reject = async (id: string) => {
-    const reason = window.prompt('Rejection reason (optional):') ?? ''
-    await updateBookingStatus(id, 'rejected', { rejectionReason: reason })
-    toast.success('Booking rejected')
-    qc.invalidateQueries({ queryKey: ['admin', 'bookings'] })
+  const reject = async () => {
+    if (!rejectTargetId) return
+    setActionLoading(true)
+    try {
+      await updateBookingStatus(rejectTargetId, 'rejected', { rejectionReason })
+      toast.success('Booking rejected')
+      qc.invalidateQueries({ queryKey: ['admin', 'bookings'] })
+      setRejectTargetId(null)
+      setRejectionReason('')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to reject booking')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   return (
@@ -109,7 +123,7 @@ export default function AdminBookingsPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     {b.status === 'approved' && (
-                      <button onClick={() => reject(b.id)} className="p-2 rounded-full hover:bg-[rgba(236,104,216,0.1)] text-[#EC68D8] transition-colors" aria-label="Reject booking">
+                      <button onClick={() => { setRejectTargetId(b.id); setRejectionReason('') }} className="p-2 rounded-full hover:bg-[rgba(236,104,216,0.1)] text-[#EC68D8] transition-colors" aria-label="Reject booking">
                         <XCircle size={16} />
                       </button>
                     )}
@@ -120,6 +134,24 @@ export default function AdminBookingsPage() {
           </Table>
         </div>
       </DataPanel>
+
+      <ConfirmDialog
+        open={rejectTargetId !== null}
+        onOpenChange={(open) => { if (!open) setRejectTargetId(null) }}
+        title="Reject Booking"
+        description="Optionally provide a reason for rejection."
+        onConfirm={reject}
+        confirmLabel="Reject"
+        variant="destructive"
+        loading={actionLoading}
+      >
+        <Input
+          value={rejectionReason}
+          onChange={(e) => setRejectionReason(e.target.value)}
+          placeholder="Rejection reason (optional)"
+          className="tl-input w-full"
+        />
+      </ConfirmDialog>
     </div>
   )
 }

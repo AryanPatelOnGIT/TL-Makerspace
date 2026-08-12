@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { UserPlus, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react'
 import { createUserProfile } from '@/services/firebase/auth'
@@ -94,7 +94,7 @@ export default function OnboardingPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<OnboardingForm>({
-    resolver: zodResolver(onboardingSchema) as any,
+    resolver: typedZodResolver(onboardingSchema),
     defaultValues: {
       userType: 'Student',
       safetyAgreementAccepted: false,

@@ -198,19 +198,23 @@ service cloud.firestore {
     }
 
     // ================================================================
-    // FEEDBACK COLLECTION
+    // FEEDBACK COLLECTION (with server-side rate limiting)
     // ================================================================
     match /feedback/{feedbackId} {
       // Only staff/admin can read feedback
       allow read: if isStaff();
-      // Authenticated users can create their own feedback — server-enforced schema
+      // Authenticated users can create their own feedback — server-enforced schema + rate limiting
       allow create: if isAuth()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.message is string
         && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 2000
         && request.resource.data.createdAt == request.time
         && !('userName' in request.resource.data)
-        && !('userEmail' in request.resource.data);
+        && !('userEmail' in request.resource.data)
+        // Rate limit: at most 1 feedback per user per 5-minute window
+        && !exists(/databases/$(database)/documents/feedback/$(request.auth.uid + '_' + string((request.time.toMillis() - 300000) / 300000)))
+        && request.resource.id == request.auth.uid + '_' + string(floor(request.time.toMillis() / 300000));
       // No one can edit or delete feedback
       allow update, delete: if false;
     }

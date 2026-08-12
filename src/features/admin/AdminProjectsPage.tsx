@@ -4,13 +4,15 @@ import { collection, query, orderBy, where, getDocs, doc, updateDoc, serverTimes
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { Search, FolderKanban, CheckCircle, XCircle } from 'lucide-react'
-import { formatDateTime, cn, cleanFirestoreData } from '@/lib/utils'
+import { formatDateTime, cn, cleanFirestoreData, debugLog } from '@/lib/utils'
 import { toast } from 'sonner'
 import type { Project } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 import { PageHeader } from '@/components/common/PageHeader'
 import { FilterChip } from '@/components/common/FilterChip'
 import { DataPanel } from '@/components/common/DataPanel'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const STATUS_COLOR: Record<string, string> = {
@@ -28,6 +30,9 @@ export default function AdminProjectsPage() {
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [rejectProject, setRejectProject] = useState<ExtendedProject | null>(null)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [actionLoading, setActionLoading] = useState(false)
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['admin', 'projects_v2'],
@@ -55,7 +60,8 @@ export default function AdminProjectsPage() {
     return matchSearch && matchStatus
   })
 
-  const updateStatus = async (projectItem: ExtendedProject, status: string, rejectionReason?: string) => {
+  const updateStatus = async (projectItem: ExtendedProject, status: string, reason?: string) => {
+    setActionLoading(true)
     let targetDocId = projectItem.docId || projectItem.firestoreDocId || (projectItem as any)._id
 
     // Fallback: If docId is not a Firestore doc ID (or is missing), query by sequential project code (e.g. "TL-001")
@@ -80,7 +86,7 @@ export default function AdminProjectsPage() {
     try {
       const updates = cleanFirestoreData({
         status,
-        rejectionReason: rejectionReason || null,
+        rejectionReason: reason || null,
         reviewedBy: profile?.displayName || 'Admin',
         reviewedAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -89,14 +95,24 @@ export default function AdminProjectsPage() {
       await updateDoc(doc(db, COLLECTIONS.PROJECTS, targetDocId), updates)
       toast.success(`Project marked as ${status}`)
       qc.invalidateQueries({ queryKey: ['admin', 'projects_v2'] })
-    } catch (error: any) {
-      console.error('Error updating project status:', error)
-      if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
+    } catch (error: unknown) {
+      const firebaseErr = error as { code?: string; message?: string }
+      debugLog('Error updating project status:', error)
+      if (firebaseErr.code === 'permission-denied' || firebaseErr.message?.includes('permission')) {
         toast.error('Permission denied: Your account document in Firestore has role="student". Please set role="super_admin" in Firebase Console -> Firestore -> users.')
       } else {
-        toast.error(`Failed to update project: ${error?.message || 'Permission denied'}`)
+        toast.error(`Failed to update project: ${firebaseErr.message || 'Permission denied'}`)
       }
+    } finally {
+      setActionLoading(false)
     }
+  }
+
+  const handleReject = async () => {
+    if (!rejectProject) return
+    await updateStatus(rejectProject, 'rejected', rejectionReason)
+    setRejectProject(null)
+    setRejectionReason('')
   }
 
   return (
@@ -169,27 +185,26 @@ export default function AdminProjectsPage() {
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end items-center">
                     <button
-                      onClick={() => updateStatus(p, 'active')}
+                      onClick={() => { updateStatus(p, 'active') }}
                       className={cn(
                         'p-2 rounded-full transition-colors',
                         p.status === 'active' ? 'bg-lime text-black font-bold' : 'hover:bg-lime/20 text-lime'
                       )}
                       title="Approve Project"
                       aria-label="Approve"
+                      disabled={actionLoading}
                     >
                       <CheckCircle size={18} />
                     </button>
                     <button
-                      onClick={() => {
-                        const r = window.prompt('Rejection reason (optional):') || ''
-                        updateStatus(p, 'rejected', r)
-                      }}
+                      onClick={() => { setRejectProject(p); setRejectionReason('') }}
                       className={cn(
                         'p-2 rounded-full transition-colors',
                         p.status === 'rejected' ? 'bg-pink text-white font-bold' : 'hover:bg-pink/20 text-pink'
                       )}
                       title="Reject Project"
                       aria-label="Reject"
+                      disabled={actionLoading}
                     >
                       <XCircle size={18} />
                     </button>
@@ -200,6 +215,24 @@ export default function AdminProjectsPage() {
           </TableBody>
         </Table>
       </DataPanel>
+
+      <ConfirmDialog
+        open={rejectProject !== null}
+        onOpenChange={(open) => { if (!open) setRejectProject(null) }}
+        title="Reject Project"
+        description="Optionally provide a reason for rejection."
+        onConfirm={handleReject}
+        confirmLabel="Reject"
+        variant="destructive"
+        loading={actionLoading}
+      >
+        <Input
+          value={rejectionReason}
+          onChange={(e) => setRejectionReason(e.target.value)}
+          placeholder="Rejection reason (optional)"
+          className="tl-input w-full"
+        />
+      </ConfirmDialog>
     </div>
   )
 }

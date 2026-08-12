@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { User } from 'firebase/auth'
+import { type DocumentData, type DocumentSnapshot } from 'firebase/firestore'
 import type { UserProfile, UserRole } from '@/types'
+import { debugLog } from '@/lib/utils'
 
 interface AuthContextValue {
   user: User | null
@@ -55,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (cancelled) return
 
-      getRedirectResult(auth).catch(console.error)
+      getRedirectResult(auth).catch((e: unknown) => { debugLog('getRedirectResult failed:', e) })
 
       const authUnsub = onAuthStateChanged(auth, (u) => {
         setUser(u)
@@ -68,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (u) {
           profileUnsub = onSnapshot(
             doc(db, 'users', u.uid),
-            (docSnap: any) => {
+            (docSnap: DocumentSnapshot<DocumentData>) => {
               if (docSnap.exists()) {
                 setProfile(docSnap.data() as UserProfile)
               } else {
@@ -96,8 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cleanup: () => void = () => {}
     init().then((c) => {
       if (c && !cancelled) cleanup = c
-    }).catch((err) => {
-      console.error('Auth initialization failed:', err)
+    }).catch((err: unknown) => {
+      debugLog('Auth initialization failed:', err)
       setAuthReady(true)
     })
 

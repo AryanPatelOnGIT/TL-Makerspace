@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { AlertCircle, Cpu, CalendarCheck } from 'lucide-react'
 import { signInWithGoogle } from '@/services/firebase/auth'
 import { toast } from 'sonner'
+import { debugLog } from '@/lib/utils'
 import dashboardArt from '@/assets/tinkerer-figjam/register-image.webp'
 import { BrandLockup } from '@/components/visual'
 
@@ -21,7 +22,7 @@ export default function LoginPage() {
       navigate(from, { replace: true })
       toast.success('Signed in successfully')
     } catch (e) {
-      console.error('GOOGLE SIGN IN ERROR:', e)
+      debugLog('GOOGLE SIGN IN ERROR:', e)
       const msg = e instanceof Error ? e.message : 'Google sign-in failed'
       if (!msg.includes('Redirecting')) {
         setError(msg)

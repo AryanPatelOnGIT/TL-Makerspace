@@ -15,12 +15,12 @@ import { useAuth } from '@/contexts/AuthContext'
 import { updateUserProfile, signOut } from '@/services/firebase/auth'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { db } from '@/lib/firebase'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { toast } from 'sonner'
 import { cn, cleanFirestoreData } from '@/lib/utils'
 import type { UserType } from '@/types'
 
-const FEEDBACK_COOLDOWN_MS = 5 * 60 * 1000 // 5 minutes
+const FEEDBACK_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
 const FEEDBACK_STORAGE_KEY = 'tl_feedback_lastSentAt'
 const MAX_WORDS = 200
 
@@ -129,7 +129,7 @@ export default function ProfilePage() {
     const stored = localStorage.getItem(feedbackStorageKey)
     if (!stored) return 0
     const elapsed = Date.now() - Number(stored)
-    const remaining = Math.ceil((FEEDBACK_COOLDOWN_MS - elapsed) / 1000)
+    const remaining = Math.ceil((FEEDBACK_WINDOW_MS - elapsed) / 1000)
     return remaining > 0 ? remaining : 0
   }
 
@@ -212,6 +212,8 @@ export default function ProfilePage() {
   const handleFeedbackSubmit = async () => {
     if (!user || !profile || feedbackBlocked) return
     setFeedbackSubmitting(true)
+    const windowId = Math.floor(Date.now() / FEEDBACK_WINDOW_MS)
+    const docId = `${user.uid}_${windowId}`
     const payload = cleanFirestoreData({
       userId: user.uid,
       message: feedbackText.trim(),
@@ -219,9 +221,9 @@ export default function ProfilePage() {
     })
 
     try {
-      await addDoc(collection(db, COLLECTIONS.FEEDBACK), payload)
+      await setDoc(doc(db, COLLECTIONS.FEEDBACK, docId), payload)
       localStorage.setItem(feedbackStorageKey, String(Date.now()))
-      setCooldownRemaining(FEEDBACK_COOLDOWN_MS / 1000)
+      setCooldownRemaining(FEEDBACK_WINDOW_MS / 1000)
       setFeedbackText('')
       setFeedbackOpen(false)
       toast.success('Feedback sent! Thank you.')

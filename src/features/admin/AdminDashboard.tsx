@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getCountFromServer, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { toast } from 'sonner'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { getAllActiveCheckouts, isCheckoutOverdue } from '@/services/firebase/toolCheckouts'
 import { EQUIPMENT_SEED } from '@/../scripts/seedEquipment'
@@ -10,6 +11,7 @@ import { Users, Calendar, Package, FolderKanban, AlertTriangle, Bell, ShieldChec
 import { PageHeader } from '@/components/common/PageHeader'
 import { DataPanel } from '@/components/common/DataPanel'
 import { KpiTile } from '@/components/common/KpiTile'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 
 function useCount(collectionName: string, field?: string, value?: string) {
   return useQuery({
@@ -43,9 +45,10 @@ export default function AdminDashboard() {
 
   const [isSeeding, setIsSeeding] = useState(false)
   const [seeded, setSeeded] = useState(false)
+  const [seedDialogOpen, setSeedDialogOpen] = useState(false)
 
   const handleSeed = async () => {
-    if (!window.confirm(`Seed ${EQUIPMENT_SEED.length} equipment items to Firestore? This will ADD items (won't overwrite existing).`)) return
+    setSeedDialogOpen(false)
     setIsSeeding(true)
     try {
       const col = collection(db, COLLECTIONS.EQUIPMENT)
@@ -55,9 +58,9 @@ export default function AdminDashboard() {
         count++
       }
       setSeeded(true)
-      alert(`✅ ${count} items seeded successfully!`)
+      toast.success(`${count} items seeded successfully!`)
     } catch (e: unknown) {
-      alert('Seed failed: ' + (e instanceof Error ? e.message : 'Unknown error'))
+      toast.error('Seed failed: ' + (e instanceof Error ? e.message : 'Unknown error'))
     } finally {
       setIsSeeding(false)
     }
@@ -113,7 +116,7 @@ export default function AdminDashboard() {
             </p>
           </div>
           <button
-            onClick={handleSeed}
+            onClick={() => setSeedDialogOpen(true)}
             disabled={isSeeding || seeded}
             className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide transition-all ${
               seeded
@@ -153,6 +156,16 @@ export default function AdminDashboard() {
           ))}
         </div>
       </DataPanel>
+
+      <ConfirmDialog
+        open={seedDialogOpen}
+        onOpenChange={setSeedDialogOpen}
+        title="Seed Equipment Database"
+        description={`This will add ${EQUIPMENT_SEED.length} equipment items to Firestore. Items won't overwrite existing ones.`}
+        onConfirm={handleSeed}
+        confirmLabel={`Seed ${EQUIPMENT_SEED.length} Items`}
+        loading={isSeeding}
+      />
     </div>
   )
 }

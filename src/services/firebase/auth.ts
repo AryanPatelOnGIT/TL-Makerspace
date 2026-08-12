@@ -1,7 +1,7 @@
 import {
   GoogleAuthProvider,
   signInWithPopup,
-  updateProfile,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth'
@@ -21,17 +21,17 @@ googleProvider.setCustomParameters({ prompt: 'select_account' })
 // ============================================================
 // SIGN IN — Google
 // ============================================================
-import { signInWithRedirect } from 'firebase/auth'
 
 export async function signInWithGoogle(): Promise<User> {
   try {
     const result = await signInWithPopup(auth, googleProvider)
     return result.user
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const firebaseError = error as { code?: string }
     if (
-      error.code === 'auth/popup-blocked' ||
-      error.code === 'auth/popup-closed-by-user' ||
-      error.code === 'auth/cross-origin-opener-policy-failed'
+      firebaseError.code === 'auth/popup-blocked' ||
+      firebaseError.code === 'auth/popup-closed-by-user' ||
+      firebaseError.code === 'auth/cross-origin-opener-policy-failed'
     ) {
       await signInWithRedirect(auth, googleProvider)
       throw new Error('Redirecting to Google...')

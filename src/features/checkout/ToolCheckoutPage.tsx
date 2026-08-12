@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
@@ -96,7 +96,7 @@ function CheckoutForm({ projects, user, profile, qc }: any) {
     register, handleSubmit, watch,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutFormData>({
-    resolver: zodResolver(checkoutSchema) as any, // eslint-disable-line
+    resolver: typedZodResolver(checkoutSchema),
     defaultValues: { action: 'checking_out', locationOfUse: 'in_lab', conditionAtCheckout: 'good', quantity: 1 },
   })
 
@@ -248,12 +248,13 @@ function CheckoutForm({ projects, user, profile, qc }: any) {
 // ── Sub-component: Return Form ────────────────────────────────────────────────
 function ReturnForm({ activeCheckouts, qc }: { activeCheckouts: ToolCheckout[]; qc: any }) {
   const {
-    register, handleSubmit,
+    register, handleSubmit, watch,
     formState: { errors, isSubmitting },
   } = useForm<ReturnFormData>({
-    resolver: zodResolver(returnSchema) as any, // eslint-disable-line
+    resolver: typedZodResolver(returnSchema),
     defaultValues: { conditionAtReturn: 'good' },
   })
+  const watchedCondition = watch('conditionAtReturn')
 
   const onSubmit = async (data: ReturnFormData) => {
     try {
@@ -314,7 +315,7 @@ function ReturnForm({ activeCheckouts, qc }: { activeCheckouts: ToolCheckout[]; 
             {CONDITIONS.map(c => (
               <label key={c} className={cn(
                 'flex min-h-10 items-center justify-center rounded-xl border-2 px-3 py-2 text-center text-sm font-medium capitalize transition-colors',
-                (document.querySelector(`input[value="${c}"][name="conditionAtReturn"]`) as HTMLInputElement)?.checked
+                watchedCondition === c
                   ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:border-primary/30'
               )}>
                 <input type="radio" value={c} {...register('conditionAtReturn')} className="sr-only" />

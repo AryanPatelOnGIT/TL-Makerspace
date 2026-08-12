@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { db } from '@/lib/firebase'
@@ -59,7 +59,7 @@ export default function EquipmentFormPage() {
   })
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<EquipmentFormData>({
-    resolver: zodResolver(equipmentSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: typedZodResolver(equipmentSchema),
     defaultValues: {
       tier: 'bookable',
       status: 'available',

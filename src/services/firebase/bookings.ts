@@ -11,7 +11,7 @@ import {
 import { db } from '@/lib/firebase'
 import { cleanFirestoreData } from '@/lib/utils'
 import { COLLECTIONS } from './firestore'
-import type { Booking, BookingStatus, BookingConsumables } from '@/types'
+import type { Booking, BookingStatus } from '@/types'
 
 // ============================================================
 // BOOKING SERVICE

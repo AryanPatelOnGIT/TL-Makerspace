@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { COLLECTIONS } from '@/services/firebase/firestore'
@@ -42,7 +42,7 @@ export default function WorkshopFormPage() {
     }, enabled: isEdit })
   
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema) as any,
+    resolver: typedZodResolver(schema),
     defaultValues: { type: 'workshop', capacity: 20, isActive: true, certificateIssued: false },
   })
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm, Controller, type SubmitErrorHandler } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
@@ -102,7 +102,7 @@ export default function BookingFormPage() {
     register, handleSubmit, watch, control, setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: zodResolver(bookingSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: typedZodResolver(bookingSchema),
     defaultValues: {
       equipmentId: params.get('machine') || '',
       date: todayStr(),

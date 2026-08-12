@@ -9,7 +9,7 @@ import { db } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
 import { ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn, cleanFirestoreData } from '@/lib/utils'
+import { cn, cleanFirestoreData, debugLog } from '@/lib/utils'
 import type { Issue } from '@/types'
 
 import { Button } from '@/components/ui/button'
@@ -52,7 +52,7 @@ export default function IssueFormPage() {
       toast.success('Issue reported. Thank you!')
       navigate('/')
     } catch (e) {
-      console.error('Failed to submit report:', e)
+      debugLog('Failed to submit report:', e)
       toast.error('Failed to submit report. Please try again.')
     }
   }

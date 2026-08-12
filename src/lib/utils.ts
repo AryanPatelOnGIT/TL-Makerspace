@@ -1,18 +1,26 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { FieldValue, Timestamp, GeoPoint, DocumentReference, Bytes } from 'firebase/firestore'
+import { FieldValue, Timestamp, GeoPoint, DocumentReference, Bytes, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-const toDate = (d: any) => d?.seconds ? new Date(d.seconds * 1000) : new Date(d)
+type FirestoreDateValue = Timestamp | Date | { seconds: number; nanoseconds?: number } | string | number
 
-export const formatDate = (d: any) => d ? toDate(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
-export const formatDateTime = (d: any) => d ? toDate(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+const toDate = (d: FirestoreDateValue): Date => {
+  if (d instanceof Date) return d
+  if (d instanceof Timestamp) return d.toDate()
+  if (typeof d === 'object' && d !== null && 'seconds' in d) return new Date(d.seconds * 1000)
+  if (typeof d === 'string' || typeof d === 'number') return new Date(d)
+  return new Date()
+}
 
-export function formatRelativeTime(date: any): string {
-  if (!date) return '—'
+export const formatDate = (d: FirestoreDateValue | null | undefined) => d != null ? toDate(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+export const formatDateTime = (d: FirestoreDateValue | null | undefined) => d != null ? toDate(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+
+export function formatRelativeTime(date: FirestoreDateValue | null | undefined): string {
+  if (date == null) return '—'
   const d = toDate(date)
   const diffInSeconds = (d.getTime() - Date.now()) / 1000
   
@@ -71,5 +79,15 @@ export function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
     }
   }
   return cleaned as T
+}
+
+export function mapDocs<T extends { id?: string }>(snap: { docs: QueryDocumentSnapshot<DocumentData>[] }): T[] {
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as unknown as T))
+}
+
+export function debugLog(...args: unknown[]): void {
+  if (import.meta.env.DEV) {
+    console.error(...args)
+  }
 }
 
