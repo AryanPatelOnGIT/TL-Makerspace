@@ -6,16 +6,21 @@
 flowchart TD
     Client["Vite + React SPA"] -->|Auth State| FirebaseAuth["Firebase Authentication"]
     Client -->|CRUD Operations| FirestoreDB[("Firestore Database")]
+    Client -->|Security Headers| FirebaseHosting["Firebase Hosting"]
     
     subgraph "Frontend Services"
         Contexts["React Contexts (Auth)"]
         Query["TanStack Query (Data Caching)"]
         Router["React Router (Navigation)"]
+        Forms["React Hook Form + Zod (Validation)"]
+        Modals["Radix Dialog (ConfirmDialogs)"]
     end
     
     Client --> Contexts
     Client --> Query
     Client --> Router
+    Client --> Forms
+    Client --> Modals
     
     Query --> FirestoreDB
     Contexts --> FirebaseAuth
@@ -26,7 +31,14 @@ flowchart TD
 ### Frontend (React/Vite)
 - **Responsibility**: Provides the user interface, manages client-side routing, and handles state.
 - **Location**: `src/`
-- **Key dependencies**: `react`, `react-router-dom`, `@tanstack/react-query`, `lucide-react`, `tailwindcss`.
+- **Key dependencies**: `react`, `react-router-dom`, `@tanstack/react-query`, `react-hook-form`, `zod`, `@hookform/resolvers`, `@radix-ui/react-dialog`, `lucide-react`, `tailwindcss`.
+
+### Form Validation (`src/lib/form.ts`)
+- **Responsibility**: Provides a typed wrapper (`typedZodResolver`) around `@hookform/resolvers/zod` for type-safe form validation with Zod v4 schemas.
+- **Usage**: All form pages (`EquipmentFormPage`, `BookingFormPage`, `ProjectFormPage`, etc.) use this wrapper instead of raw `zodResolver` + `as any` casts.
+
+### Shared UI Components
+- **`ConfirmDialog`** (`src/components/common/ConfirmDialog.tsx`): Reusable Radix UI dialog for destructive or default confirmation prompts. Replaces `window.confirm()` calls across the app with a consistent, accessible modal.
 
 ### Firebase Services
 - **Responsibility**: Handles backend infrastructure including user authentication and NoSQL data storage.
@@ -102,7 +114,18 @@ erDiagram
 
 - **Service Layer Pattern**: Firestore interactions are decoupled into a dedicated service layer (`src/services/firebase/`) using native Firebase SDK methods to streamline data access across the application.
 - **Data Caching**: `@tanstack/react-query` is heavily utilized to cache Firestore document reads, reducing database reads and improving UI responsiveness.
-- **Tailwind & shadcn/ui**: The UI is built with a utility-first CSS framework (Tailwind) and reusable components (inspired by shadcn/ui) for rapid, consistent development.
+- **Tailwind & Radix UI**: The UI is built with a utility-first CSS framework (Tailwind) and accessible primitives (Radix UI) for dialogs, combined with custom components modeled on shadcn/ui patterns.
+- **Form Handling**: React Hook Form + Zod provide typed, validated form handling. A centralized `typedZodResolver` wrapper in `src/lib/form.ts` normalizes Zod v4 compatibility across all form pages.
+- **Security Headers**: HTTP security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) are enforced at the Firebase Hosting level via `firebase.json`.
+- **Server-Side Rate Limiting**: Feedback submissions are rate-limited both client-side (via localStorage) and server-side (via Firestore security rules enforcing deterministic document IDs keyed by user + time window).
+
+## Utilities (`src/lib/utils.ts`)
+
+- **`cn`**: Tailwind class merging via `clsx` + `tailwind-merge`.
+- **`formatDate` / `formatDateTime` / `formatRelativeTime`**: Date formatting utilities with proper `FirestoreDateValue` type support (Timestamp, Date, seconds-object, string, number).
+- **`cleanFirestoreData`**: Strips `undefined` values from objects before writing to Firestore.
+- **`mapDocs<T>`**: Generic helper to map Firestore `QueryDocumentSnapshot[]` to typed arrays with `id` injection.
+- **`debugLog`**: Dev-gated logging (`console.error` only in `import.meta.env.DEV`) to replace production console.error calls.
 
 ## Technology Stack
 
@@ -113,3 +136,6 @@ erDiagram
 | Backend | Firebase | Auth and Firestore |
 | State/Cache | TanStack Query | Remote data fetching and caching |
 | Routing | React Router | Client-side routing |
+| Form(s) | React Hook Form + Zod | Typed, validated forms |
+| Dialogs | Radix UI | Accessible modal primitives |
+| Linting | oxlint | Fast Rust-based linter |

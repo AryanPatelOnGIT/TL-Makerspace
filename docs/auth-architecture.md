@@ -99,7 +99,9 @@ interface UserProfile {
    * View Mode: Displays profile photo (Google `photoURL`), name, email, and user-type specific details. Filters out duplicate badges (e.g. Student/Student).
    * Edit Mode: Allows editing profile details (excluding roles, status, and terms/safety agreements).
    * Missing Profile: Authenticated users without a profile document see an onboarding call-to-action that routes to `/onboarding` instead of editable profile controls.
-   * Feedback panel: Allows submitting text feedback up to 200 words, rate-limited to 5 minutes between submissions. The cooldown and word-limit are currently enforced client-only (via `localStorage` key `tl_feedback_lastSentAt_{uid}` and in-form validation); server-side enforcement has not been implemented yet.
+   * Feedback panel: Allows submitting text feedback up to 200 words, rate-limited to 5 minutes between submissions. Rate limiting is enforced at both layers:
+     - **Client-side**: localStorage key `tl_feedback_lastSentAt` with 5-minute cooldown, plus in-form word-count validation.
+     - **Server-side**: Firestore security rules enforce deterministic document IDs (`userId_windowId`) so that only one feedback document can be created per user per 5-minute window, with an additional 2000-character message size cap.
    * Admin Panel entry: Staff/admin users see an "Admin Panel" card (visible only when `isStaff`) that routes to `/admin` — this is the primary admin entry point on mobile, where the desktop sidebar is hidden.
    * Logout button: Explicitly signs out of Firebase Auth and redirects to `/login`.
 
