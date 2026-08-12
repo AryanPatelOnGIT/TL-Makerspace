@@ -45,7 +45,7 @@ export default function ProjectListPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in mt-2">
+    <div className="mx-auto mt-2 w-full max-w-[1440px] min-w-0 animate-fade-in">
       <PageHeader
         variant="dark"
         title="Projects & Work"
@@ -85,20 +85,20 @@ export default function ProjectListPage() {
       />
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-48 rounded-card bg-near-black border border-hairline animate-pulse" />
+             <div key={i} className="min-h-40 rounded-card bg-near-black border border-hairline animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-20 text-center text-xs text-white/40">
+         <div className="py-10 text-center text-xs text-white/40">
           <FolderGit2 className="h-8 w-8 mx-auto mb-2 opacity-30" />
           No projects found matching your search criteria.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filtered.map(p => (
-            <EntityCard key={p._firestoreId} as="button" onClick={() => navigate(`/projects/${p._firestoreId}`)} className="cursor-pointer p-5 flex flex-col justify-between h-48">
+             <EntityCard key={p._firestoreId} as="button" onClick={() => navigate(`/projects/${p._firestoreId}`)} className="flex min-h-40 cursor-pointer flex-col justify-between p-5">
               <div>
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">ID: {p.id?.slice(0, 6)}</span>

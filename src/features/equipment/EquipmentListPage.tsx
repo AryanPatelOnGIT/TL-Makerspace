@@ -64,7 +64,7 @@ export default function EquipmentListPage() {
   })
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in mt-2">
+    <div className="mx-auto mt-2 w-full max-w-[1440px] min-w-0 animate-fade-in">
       <PageHeader
         variant="dark"
         title="Machines & Equipment"
@@ -73,7 +73,7 @@ export default function EquipmentListPage() {
           isStaff ? (
             <button
               onClick={() => navigate('/equipment/new')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-lime text-black font-bold text-xs hover:bg-lime/90 transition-all shadow-sm"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-lime px-5 py-2.5 text-xs font-bold text-black shadow-sm transition-all hover:bg-lime/90"
             >
               <Plus size={16} /> Add Equipment
             </button>
@@ -121,17 +121,17 @@ export default function EquipmentListPage() {
       />
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="h-64 rounded-card bg-near-black border border-hairline animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-20 text-center text-white/40 text-xs">
+           <div className="py-10 text-center text-xs text-white/40">
           No equipment found matching your filters.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filtered.map(e => {
             const cfg = STATUS_CONFIG[e.status] ?? STATUS_CONFIG.available
 

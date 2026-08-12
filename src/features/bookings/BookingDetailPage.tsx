@@ -57,17 +57,17 @@ export default function BookingDetailPage() {
   }[booking.status] as any || 'outline'
 
   return (
-    <div className="container mx-auto max-w-4xl space-y-6 py-6 animate-fade-in">
-      <div className="flex items-center gap-4 rounded-card bg-indigo p-6 md:p-8">
+    <div className="mx-auto max-w-4xl space-y-5 py-4 animate-fade-in sm:space-y-6 sm:py-6">
+       <div className="flex flex-wrap items-center gap-3 rounded-card bg-indigo p-5 sm:gap-4 sm:p-6 lg:p-8">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/55">Booking #{id?.slice(-8).toUpperCase()}</p>
-          <h1 className="mt-2 text-4xl font-extrabold tracking-[-0.05em] text-white md:text-5xl">{booking.machineName}</h1>
+           <h1 className="mt-2 text-[clamp(2.25rem,6vw,3.5rem)] font-extrabold tracking-[-0.05em] text-white">{booking.machineName}</h1>
           <p className="mt-3 text-sm font-medium text-white/65">Your booking details, safety acknowledgement, and approval status.</p>
         </div>
-        <Badge variant={badgeVariant} className="text-sm px-3 py-1 capitalize">
+         <Badge variant={badgeVariant} className="shrink-0 px-3 py-1 text-sm capitalize">
           {booking.status}
         </Badge>
       </div>

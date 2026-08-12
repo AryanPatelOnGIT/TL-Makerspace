@@ -101,7 +101,7 @@ export default function CheckoutPage() {
   const inp = (hasErr: boolean) => `w-full px-3 py-2 text-sm border rounded-md bg-background outline-none focus:ring-2 focus:ring-ring${hasErr ? ' border-destructive' : ''}`
 
   return (
-    <div className="space-y-6 max-w-xl animate-fade-in">
+    <div className="w-full max-w-2xl space-y-5 animate-fade-in sm:space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
         <div>
@@ -155,12 +155,12 @@ export default function CheckoutPage() {
           <textarea rows={2} placeholder="Purpose, condition notes…" className={`${inp(false)} resize-none`} {...register('notes')} />
         </div>
 
-        <div className="flex gap-3 pt-2">
-          <Button type="submit" disabled={isSubmitting} className="gap-2">
+        <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row">
+          <Button type="submit" disabled={isSubmitting} className="w-full gap-2 sm:w-auto">
             {isSubmitting ? <div className="w-4 h-4 border-2 border-current/20 border-t-current rounded-full animate-spin" /> : <Package size={16} />}
             Submit
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} className="w-full sm:w-auto">Cancel</Button>
         </div>
       </form>
     </div>

@@ -33,7 +33,7 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
         className
       )}
     >
-      <div className="grid grid-cols-2 lg:grid-cols-4 divide-y divide-hairline sm:divide-y-0 sm:divide-x">
+      <div className="tl-stat-grid divide-y divide-hairline xl:divide-x xl:divide-y-0">
         {items.map(item => {
           const Icon = item.icon
           const accent = ACCENT_STYLES[item.accent] || ACCENT_STYLES.pink
@@ -45,10 +45,10 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
               key={item.id}
               type={item.onClick ? 'button' : undefined}
               onClick={item.onClick}
-              className="group flex flex-col justify-between p-4 lg:p-5 text-left hover:bg-white/[0.04] focus:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-1 ring-offset-near-black transition-colors duration-150"
+              className="group flex min-w-0 flex-col justify-between p-4 text-left transition-colors duration-150 hover:bg-white/[0.04] focus:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-1 ring-offset-near-black xl:p-5"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.1em] text-white/45 group-hover:text-white/75 transition-colors">
+                <span className="min-w-0 text-[10px] font-bold uppercase leading-tight tracking-[0.1em] text-white/45 transition-colors group-hover:text-white/75 sm:text-[11px]">
                   {item.label}
                 </span>
                 <span
@@ -62,7 +62,7 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
               </div>
 
               <div className="mt-3">
-                <p className="font-data text-2xl lg:text-3xl font-extrabold leading-none tracking-tight text-white">
+                <p className="font-data text-2xl font-extrabold leading-none tracking-tight text-white xl:text-3xl">
                   {item.value}
                 </p>
                 {item.detail && (

@@ -82,7 +82,7 @@ export default function BookingCalendarPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in space-y-6 mt-2">
+    <div className="mx-auto mt-2 w-full max-w-[1440px] min-w-0 space-y-5 animate-fade-in sm:space-y-6">
       <PageHeader
         variant="dark"
         title="Bookings & Calendar"
@@ -97,7 +97,7 @@ export default function BookingCalendarPage() {
         }
       />
 
-      <div className="rounded-card border border-hairline bg-near-black p-4 flex flex-row items-center justify-between gap-4 text-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-hairline bg-near-black p-3 text-white shadow-sm sm:p-4">
         <div className="flex items-center gap-2">
           <Button
             aria-label="Previous week"
@@ -119,7 +119,7 @@ export default function BookingCalendarPage() {
           </Button>
         </div>
 
-        <div className="text-xs sm:text-sm font-bold tracking-tight text-white">
+        <div className="order-3 w-full text-center text-xs font-bold tracking-tight text-white sm:order-none sm:w-auto sm:text-sm">
           <span>{new Date(weekDays[0] + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
           <span className="mx-2 text-white/30">—</span>
           <span>{new Date(weekDays[6] + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>

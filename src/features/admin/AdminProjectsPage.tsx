@@ -100,7 +100,7 @@ export default function AdminProjectsPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in">
+    <div className="mx-auto w-full max-w-[1440px] min-w-0 animate-fade-in">
       <PageHeader
         variant="dark"
         title="Projects"
@@ -113,7 +113,7 @@ export default function AdminProjectsPage() {
         filters={
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
             <div className="relative w-full lg:w-80 flex-shrink-0">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7D9FC2]" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" />
               <input type="text" placeholder="Search projects…" value={search} onChange={e => setSearch(e.target.value)} className="tl-input pl-11 w-full" />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -133,34 +133,34 @@ export default function AdminProjectsPage() {
               <TableHead>#</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Submitted by</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Start</TableHead>
-              <TableHead>Submitted</TableHead>
+               <TableHead className="hidden lg:table-cell">Type</TableHead>
+               <TableHead className="hidden lg:table-cell">Department</TableHead>
+               <TableHead className="hidden sm:table-cell">Start</TableHead>
+               <TableHead className="hidden xl:table-cell">Submitted</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={9} className="h-32 text-center text-[#7D9FC2]">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="h-24 text-center text-white/50">Loading…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={9} className="h-32 text-center text-[#7D9FC2]">No projects found.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="h-24 text-center text-white/50">No projects found.</TableCell></TableRow>
             ) : filtered.map((p, idx) => (
               <TableRow key={p.docId || p.id || idx} className={cn('border-0', p.status === 'pending' && 'bg-orange/5')}>
-                <TableCell className="text-[#7D9FC2] font-mono text-xs">{filtered.length - idx}</TableCell>
-                <TableCell className="font-semibold text-[#56779D]">
+                <TableCell className="font-mono text-xs text-white/50">{filtered.length - idx}</TableCell>
+                <TableCell className="font-semibold text-white">
                   <div>{p.title}</div>
-                  <div className="text-xs text-[#7D9FC2] font-mono">{p.id}</div>
+                  <div className="font-mono text-xs text-white/50">{p.id}</div>
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm font-medium text-[#56779D]">{p.userName}</div>
+                  <div className="text-sm font-medium text-white">{p.userName}</div>
                   <div className="text-xs text-white/45">{p.userEmail}</div>
                 </TableCell>
-                <TableCell className="text-[#7D9FC2] text-xs uppercase">{p.userType}</TableCell>
-                <TableCell className="text-[#7D9FC2] text-sm">{p.department || '—'}</TableCell>
-                <TableCell className="text-[#7D9FC2] text-sm">{p.startDate}</TableCell>
-                <TableCell className="text-[#7D9FC2] text-sm">{formatDateTime(p.createdAt)}</TableCell>
+                 <TableCell className="hidden text-xs uppercase text-white/50 lg:table-cell">{p.userType}</TableCell>
+                 <TableCell className="hidden text-sm text-white/50 lg:table-cell">{p.department || '—'}</TableCell>
+                 <TableCell className="hidden text-sm text-white/50 sm:table-cell">{p.startDate}</TableCell>
+                 <TableCell className="hidden text-sm text-white/50 xl:table-cell">{formatDateTime(p.createdAt)}</TableCell>
                 <TableCell>
                   <span className={cn('text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider', STATUS_COLOR[p.status] || 'bg-white/40 border border-white/20 shadow-sm text-white')}>
                     {p.status}

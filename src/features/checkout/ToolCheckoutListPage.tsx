@@ -67,7 +67,7 @@ export default function ToolCheckoutListPage() {
   ]
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in mt-2">
+    <div className="mx-auto mt-2 w-full max-w-[1440px] min-w-0 animate-fade-in">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/50 hover:text-white mb-4 transition-colors text-xs font-bold">
         ← Back
       </button>
@@ -96,7 +96,7 @@ export default function ToolCheckoutListPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-3 sm:gap-4">
         <KpiTile label="Active" value={activeCount} color="#514AF1" textColor="light" icon={Clock} />
         <KpiTile label="Overdue" value={overdueCount} color={overdueCount > 0 ? '#EC68D8' : '#141517'} textColor={overdueCount > 0 ? 'dark' : 'light'} icon={AlertTriangle} />
         <KpiTile label="Returned" value={returnedCount} color="#DDF237" textColor="dark" icon={CheckCircle2} />

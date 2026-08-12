@@ -244,7 +244,7 @@ export default function ProfilePage() {
   const userType = profile?.userType as UserType | undefined
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 space-y-5 animate-in fade-in duration-300">
+    <div className="mx-auto max-w-3xl space-y-5 py-4 animate-in fade-in duration-300 sm:py-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-black uppercase tracking-wide text-white">Profile</h1>

@@ -199,7 +199,7 @@ export default function BookingFormPage() {
   const hasNoProjects = !projectsLoading && projects.length === 0
 
   return (
-    <div className="container mx-auto max-w-5xl space-y-6 py-6 animate-fade-in">
+    <div className="mx-auto max-w-5xl space-y-5 py-4 animate-fade-in sm:space-y-6 sm:py-6">
 
       {/* Header */}
       <div className="flex items-center gap-4">
@@ -319,13 +319,13 @@ export default function BookingFormPage() {
               </Field>
 
               {watchDate && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Start Time" required error={errors.startTime?.message}>
                     <Controller
                       control={control}
                       name="startTime"
                       render={({ field }) => (
-                        <div className="grid grid-cols-3 gap-1.5">
+                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                           {TIME_SLOTS.slice(0, -1).map(t => {
                             const booked = isTimeBooked(t)
                             return (
@@ -334,7 +334,7 @@ export default function BookingFormPage() {
                                 onClick={() => !booked && field.onChange(t)}
                                 disabled={booked}
                                 className={cn(
-                                  'py-2 px-1 rounded-lg text-xs font-medium border-2 transition-all',
+                                   'min-h-10 rounded-lg border-2 px-1 py-2 text-xs font-medium transition-all',
                                   booked
                                     ? 'bg-destructive/10 border-destructive/20 text-destructive/50 cursor-not-allowed line-through'
                                     : field.value === t
@@ -353,7 +353,7 @@ export default function BookingFormPage() {
                       control={control}
                       name="endTime"
                       render={({ field }) => (
-                        <div className="grid grid-cols-3 gap-1.5">
+                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                           {TIME_SLOTS.slice(1).map(t => {
                             const booked = isTimeBooked(t)
                             const beforeStart = watchStart && t <= watchStart
@@ -364,7 +364,7 @@ export default function BookingFormPage() {
                                 onClick={() => !disabled && field.onChange(t)}
                                 disabled={disabled}
                                 className={cn(
-                                  'py-2 px-1 rounded-lg text-xs font-medium border-2 transition-all',
+                                   'min-h-10 rounded-lg border-2 px-1 py-2 text-xs font-medium transition-all',
                                   booked
                                     ? 'bg-destructive/10 border-destructive/20 text-destructive/50 cursor-not-allowed line-through'
                                     : beforeStart
@@ -425,7 +425,7 @@ export default function BookingFormPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Filament Type">
                   <select {...register('filamentType')} className="flex h-10 w-full rounded-xl border-2 border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <option value="">Select type</option>
@@ -478,12 +478,12 @@ export default function BookingFormPage() {
         )}
 
         {/* ── Submit ────────────────────────────────────────────────── */}
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+        <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} className="w-full sm:w-auto">Cancel</Button>
           <Button
             type="submit"
             disabled={isSubmitting || hasNoProjects || !watchEquipmentId}
-            className="min-w-[160px] gap-2"
+            className="w-full gap-2 sm:min-w-[160px] sm:w-auto"
           >
             {isSubmitting
               ? <><div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" /> Booking…</>

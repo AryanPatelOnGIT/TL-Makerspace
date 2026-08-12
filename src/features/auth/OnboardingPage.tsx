@@ -197,9 +197,9 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black p-4 py-8 text-white md:p-12">
+    <div className="relative flex min-h-svh items-center justify-center overflow-hidden bg-black p-4 py-6 text-white md:p-8">
       {/* Profile Wizard Panel */}
-      <div className="relative z-10 w-full max-w-3xl rounded-card border border-hairline bg-near-black p-6 text-white md:p-8">
+      <div className="relative z-10 w-full max-w-3xl rounded-card border border-hairline bg-near-black p-4 text-white sm:p-6 md:p-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <BrandLockup compact />
@@ -301,7 +301,7 @@ export default function OnboardingPage() {
               {userType === 'Student' && (
                 <div className="space-y-4 pt-4 border-t-2 border-white/10">
                   <p className="text-xs font-black text-pink uppercase tracking-widest">Student Details</p>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="University ID" required error={errors.universityId?.message}>
                       <input {...register('universityId')} placeholder="e.g. AU2440123" className={cn("tl-input", errors.universityId && 'ring-2 ring-pink')} />
                     </Field>
@@ -321,7 +321,7 @@ export default function OnboardingPage() {
               {userType === 'Professor or Faculty' && (
                 <div className="space-y-4 pt-4 border-t-2 border-white/10">
                   <p className="text-xs font-black text-pink uppercase tracking-widest">Faculty Details</p>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Department" required error={errors.department?.message}>
                       <input {...register('department')} placeholder="e.g. Mechanical" className={cn("tl-input", errors.department && 'ring-2 ring-pink')} />
                     </Field>
@@ -341,7 +341,7 @@ export default function OnboardingPage() {
               {userType === 'Venture Studio Startup' && (
                 <div className="space-y-4 pt-4 border-t-2 border-white/10">
                   <p className="text-xs font-black text-pink uppercase tracking-widest">Startup Details</p>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Startup Name" required error={errors.startupName?.message}>
                       <input {...register('startupName')} placeholder="Startup's name" className={cn("tl-input", errors.startupName && 'ring-2 ring-pink')} />
                     </Field>
@@ -361,7 +361,7 @@ export default function OnboardingPage() {
               {userType === 'External Visitor' && (
                 <div className="space-y-4 pt-4 border-t-2 border-white/10">
                   <p className="text-xs font-black text-pink uppercase tracking-widest">Visitor Details</p>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Organization / Institution" required error={errors.organization?.message}>
                       <input {...register('organization')} placeholder="Your organization" className={cn("tl-input", errors.organization && 'ring-2 ring-pink')} />
                     </Field>
@@ -398,7 +398,7 @@ export default function OnboardingPage() {
               eyebrow="Final step"
               title="Two promises before you enter the lab."
               description="Confirm the safety and booking terms that protect you, the equipment, and everyone sharing the space."
-              className="min-h-[34rem]"
+               className="min-h-0"
               controls={(
                 <>
                   <AgreementCard

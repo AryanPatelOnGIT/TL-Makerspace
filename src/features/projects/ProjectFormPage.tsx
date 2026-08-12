@@ -169,7 +169,7 @@ export default function ProjectFormPage() {
   if (isLoading) return <LoadingSpinner text="Loading project…" />
 
   return (
-    <div className="space-y-6 container py-6 mx-auto max-w-3xl animate-fade-in">
+    <div className="mx-auto max-w-3xl space-y-5 py-4 animate-fade-in sm:space-y-6 sm:py-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full hover:bg-white/10">
           <ArrowLeft className="h-5 w-5 text-white" />
@@ -272,7 +272,7 @@ export default function ProjectFormPage() {
               name="expectedEquipmentNeeds"
               control={control}
               render={({ field }) => (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
                   {EQUIPMENT_NEEDS.map(item => {
                     const checked = (field.value || []).includes(item)
                     return (
@@ -360,19 +360,19 @@ export default function ProjectFormPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
             onClick={() => navigate(-1)}
-            className="rounded-full border-hairline bg-white/5 text-white hover:bg-white/10 px-6 h-11 text-xs font-bold"
+            className="h-11 w-full rounded-full border-hairline bg-white/5 px-6 text-xs font-bold text-white hover:bg-white/10 sm:w-auto"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-full bg-lime text-black hover:bg-lime/90 px-8 h-11 text-xs font-bold gap-2 shadow-sm"
+            className="h-11 w-full gap-2 rounded-full bg-lime px-8 text-xs font-bold text-black shadow-sm hover:bg-lime/90 sm:w-auto"
           >
             {isSubmitting ? (
               <>

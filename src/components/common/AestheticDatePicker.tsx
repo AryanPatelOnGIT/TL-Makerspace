@@ -146,7 +146,7 @@ export function AestheticDatePicker({
             onClick={() => onChange('')}
             disabled={disabled}
             className={cn(
-              'shrink-0 p-2 text-white/40 hover:text-white rounded-md transition-colors border border-transparent hover:border-white/20',
+               'flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-transparent p-2 text-white/40 transition-colors hover:border-white/20 hover:text-white',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
             aria-label="Clear date"
@@ -158,9 +158,9 @@ export function AestheticDatePicker({
 
       {/* Popover Dark Theme Calendar */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-72 p-4 rounded-card border border-hairline bg-near-black text-white shadow-2xl animate-fade-in left-0" role="dialog" aria-label="Date picker">
+        <div className="absolute left-0 z-50 mt-2 max-h-[min(28rem,70vh)] w-[min(18rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-card border border-hairline bg-near-black p-4 text-white shadow-2xl animate-fade-in sm:left-auto sm:right-0" role="dialog" aria-label="Date picker">
           {/* Quick Presets */}
-          <div className="flex items-center gap-1.5 pb-3 mb-3 border-b border-hairline">
+          <div className="mb-3 flex flex-wrap items-center gap-1.5 border-b border-hairline pb-3">
             <button
               type="button"
               onClick={() => handlePreset(0)}

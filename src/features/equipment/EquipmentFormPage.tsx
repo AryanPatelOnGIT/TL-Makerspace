@@ -130,7 +130,7 @@ export default function EquipmentFormPage() {
   const selectClasses = "flex h-10 w-full rounded-md border border-hairline bg-near-black px-3 py-2 text-sm text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-lime disabled:cursor-not-allowed disabled:opacity-50"
 
   return (
-    <div className="space-y-6 container py-6 mx-auto max-w-4xl animate-fade-in">
+    <div className="mx-auto max-w-4xl space-y-5 py-4 animate-fade-in sm:space-y-6 sm:py-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
@@ -221,11 +221,11 @@ export default function EquipmentFormPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4 pb-12">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+        <div className="flex flex-col-reverse gap-3 pb-6 sm:flex-row sm:justify-end sm:gap-4 sm:pb-8">
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="gap-2">
+          <Button type="submit" disabled={isSubmitting} className="w-full gap-2 sm:w-auto">
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {isEdit ? 'Save changes' : 'Add equipment'}
           </Button>

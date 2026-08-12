@@ -42,7 +42,7 @@ export default function InventoryListPage() {
   const lowStock = items.filter(i => i.status === 'low_stock').length
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in mt-2">
+    <div className="mx-auto mt-2 w-full max-w-[1440px] min-w-0 animate-fade-in">
       <PageHeader
         variant="dark"
         title="Inventory & Stock"
@@ -113,11 +113,11 @@ export default function InventoryListPage() {
             <TableHeader className="bg-white/[0.03]">
               <TableRow className="hover:bg-transparent border-hairline">
                 <TableHead className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Item</TableHead>
-                <TableHead className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Category</TableHead>
+               <TableHead className="hidden text-white/40 text-[10px] uppercase font-bold tracking-widest sm:table-cell">Category</TableHead>
                 <TableHead className="text-right text-white/40 text-[10px] uppercase font-bold tracking-widest">Qty</TableHead>
-                <TableHead className="text-right text-white/40 text-[10px] uppercase font-bold tracking-widest">Min</TableHead>
-                <TableHead className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Unit</TableHead>
-                <TableHead className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Location</TableHead>
+               <TableHead className="hidden text-right text-white/40 text-[10px] uppercase font-bold tracking-widest sm:table-cell">Min</TableHead>
+               <TableHead className="hidden text-white/40 text-[10px] uppercase font-bold tracking-widest md:table-cell">Unit</TableHead>
+               <TableHead className="hidden text-white/40 text-[10px] uppercase font-bold tracking-widest lg:table-cell">Location</TableHead>
                 <TableHead className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Status</TableHead>
                 <TableHead className="text-right text-white/40 text-[10px] uppercase font-bold tracking-widest">Actions</TableHead>
               </TableRow>
@@ -151,16 +151,16 @@ export default function InventoryListPage() {
                     <TableCell className="font-bold text-white group-hover:text-lime transition-colors text-xs sm:text-sm">
                       {item.name}
                     </TableCell>
-                    <TableCell className="text-white/50 text-xs font-medium">{item.category}</TableCell>
+                     <TableCell className="hidden text-xs font-medium text-white/50 sm:table-cell">{item.category}</TableCell>
                     <TableCell className={cn(
                       'font-data text-right font-extrabold text-sm',
                       item.quantity === 0 ? 'text-pink' : item.quantity <= item.minQuantity ? 'text-orange' : 'text-white'
                     )}>
                       {item.quantity}
                     </TableCell>
-                    <TableCell className="font-data text-xs text-white/40 text-right">{item.minQuantity}</TableCell>
-                    <TableCell className="text-xs text-white/50">{item.unit}</TableCell>
-                    <TableCell className="text-xs text-white/50">{item.location || '—'}</TableCell>
+                     <TableCell className="hidden font-data text-right text-xs text-white/40 sm:table-cell">{item.minQuantity}</TableCell>
+                     <TableCell className="hidden text-xs text-white/50 md:table-cell">{item.unit}</TableCell>
+                     <TableCell className="hidden text-xs text-white/50 lg:table-cell">{item.location || '—'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn(
                         "uppercase tracking-widest text-[9px] font-bold border",
@@ -175,7 +175,7 @@ export default function InventoryListPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-white/40 hover:text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-lime rounded-full hover:bg-white/10 text-xs transition-all"
+                         className="rounded-full text-xs text-white/40 transition-all hover:bg-white/10 hover:text-white focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-lime sm:opacity-0 sm:group-hover:opacity-100"
                         onClick={e => { e.stopPropagation(); navigate(`/inventory/${item.id}`) }}
                       >
                         View

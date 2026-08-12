@@ -64,7 +64,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in">
+    <div className="mx-auto w-full max-w-[1440px] min-w-0 animate-fade-in">
       <PageHeader
         variant="dark"
         title="Admin Hub"
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
         }
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+      <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-3 sm:gap-4">
         <KpiTile label="Total Users" value={totalUsers} icon={Users} href="/admin/users" color="#DDF237" footer="Manage →" />
         <KpiTile label="Total Bookings" value={totalBookings} icon={Calendar} href="/admin/bookings" color="#FFF4BE" footer="Manage →" />
         <KpiTile label="Total Projects" value={totalProjects} icon={FolderKanban} href="/admin/projects" color="#E1D7A8" footer="Manage →" />
@@ -85,30 +85,30 @@ export default function AdminDashboard() {
         <KpiTile label="Announcements" value="Manage" icon={Bell} href="/admin/announcements" color="#514AF1" textColor="light" footer="Manage →" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="mb-6 grid min-w-0 gap-4 xl:grid-cols-2 sm:gap-5">
         <DataPanel title="Tool Checkout Status">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             <div className="tl-kpi-tile" style={{ backgroundColor: '#DDF237' }}>
-              <span className="tl-kpi-label text-[#56779D]">Active</span>
-              <span className="tl-kpi-value text-[#56779D]">{activeCheckoutCount}</span>
+               <span className="tl-kpi-label text-black/60">Active</span>
+               <span className="tl-kpi-value text-black">{activeCheckoutCount}</span>
             </div>
             <div className="tl-kpi-tile" style={{ backgroundColor: overdueCount > 0 ? '#EC68D8' : '#191919' }}>
-              <span className={overdueCount > 0 ? 'tl-kpi-label text-white' : 'tl-kpi-label text-[#7D9FC2]'}>Overdue</span>
-              <span className={overdueCount > 0 ? 'tl-kpi-value text-white' : 'tl-kpi-value text-white'}>{overdueCount}</span>
+               <span className={overdueCount > 0 ? 'tl-kpi-label text-black/60' : 'tl-kpi-label text-white/60'}>Overdue</span>
+               <span className={overdueCount > 0 ? 'tl-kpi-value text-black' : 'tl-kpi-value text-white'}>{overdueCount}</span>
             </div>
             <Link to="/checkout/history" className="tl-kpi-tile group" style={{ backgroundColor: '#514AF1' }}>
-              <span className="tl-kpi-label text-[#7D9FC2]">Total</span>
-              <span className="tl-kpi-value text-[#56779D]">{allCheckouts.length}</span>
-              <span className="text-[11px] font-bold text-[#7D9FC2] uppercase tracking-wider group-hover:text-white/70">View →</span>
+               <span className="tl-kpi-label text-white/60">Total</span>
+               <span className="tl-kpi-value text-white">{allCheckouts.length}</span>
+               <span className="text-[11px] font-bold uppercase tracking-wider text-white/60 group-hover:text-white/70">View →</span>
             </Link>
           </div>
         </DataPanel>
 
         <DataPanel title="Database Setup">
           <div className="flex items-center gap-2 mb-3">
-            <Database size={18} className="text-[#7D9FC2]" />
-            <p className="text-[#7D9FC2] text-sm font-medium">
-              Equipment database has <strong className="text-[#56779D]">{totalEquipment}</strong> items.
+             <Database size={18} className="text-white/60" />
+             <p className="text-sm font-medium text-white/60">
+               Equipment database has <strong className="text-white">{totalEquipment}</strong> items.
               {totalEquipment === 0 && ' Seed the full equipment list to get started.'}
             </p>
           </div>
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
             disabled={isSeeding || seeded}
             className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide transition-all ${
               seeded
-                ? 'bg-lime text-[#56779D] cursor-not-allowed'
+                 ? 'bg-lime text-black cursor-not-allowed'
                 : 'tl-pill-button'
             }`}
           >
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
       </div>
 
       <DataPanel title="Quick Actions">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
           {[
             { label: 'Review Bookings', href: '/admin/bookings', bg: '#FFB13F' },
             { label: 'Review Projects', href: '/admin/projects', bg: '#DDF237' },

@@ -30,17 +30,17 @@ export function PageHeader({
   const styles = VARIANT_STYLES[variant] || VARIANT_STYLES.dark
 
   return (
-    <div className={cn('rounded-card p-6 lg:p-8 mb-6 relative overflow-hidden shadow-sm', styles.panel, className)}>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 pb-4 border-b border-hairline/60 relative z-10">
-        <div>
-          <h1 className={cn('text-3xl md:text-4xl font-extrabold tracking-tight mb-2 leading-none', styles.title)}>
+    <div className={cn('relative mb-5 overflow-hidden rounded-card p-4 shadow-sm sm:p-5 lg:p-6', styles.panel, className)}>
+      <div className="relative z-10 mb-4 flex min-w-0 flex-col justify-between gap-4 border-b border-hairline/60 pb-3 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 className={cn('mb-2 text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-none tracking-tight', styles.title)}>
             {title}
           </h1>
           {description && (
             <p className={cn('font-normal max-w-2xl text-sm leading-relaxed', styles.desc)}>{description}</p>
           )}
         </div>
-        {action}
+        {action && <div className="w-full shrink-0 sm:w-auto [&>button]:w-full sm:[&>button]:w-auto">{action}</div>}
       </div>
       {filters && <div className="relative z-10">{filters}</div>}
     </div>

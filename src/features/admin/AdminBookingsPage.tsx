@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const STATUS_COLOR: Record<string, string> = {
   approved: 'bg-[rgba(221,242,55,0.15)] text-[#DDF237]',
   rejected: 'bg-[rgba(236,104,216,0.15)] text-[#EC68D8]',
-  cancelled: 'bg-[rgba(255,255,255,0.1)] text-[#7D9FC2]',
+  cancelled: 'bg-white/10 text-white/50',
   completed: 'bg-[rgba(81,74,241,0.2)] text-[#9B97F7]',
 }
 
@@ -47,7 +47,7 @@ export default function AdminBookingsPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 animate-fade-in mt-4">
+    <div className="mx-auto mt-2 w-full max-w-[1440px] min-w-0 animate-fade-in sm:mt-4">
       <PageHeader
         variant="dark"
         title="Bookings"
@@ -60,7 +60,7 @@ export default function AdminBookingsPage() {
         filters={
           <div className="flex flex-col lg:flex-row gap-5 items-start lg:items-center">
             <div className="relative w-full lg:w-80 flex-shrink-0">
-              <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#7D9FC2]" />
+              <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/50" />
               <input type="text" placeholder="Search bookings…" value={search} onChange={e => setSearch(e.target.value)} className="tl-input pl-12 w-full h-[44px]" />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -78,34 +78,34 @@ export default function AdminBookingsPage() {
           <Table>
             <TableHeader className="bg-[rgba(255,255,255,0.02)]">
               <TableRow className="hover:bg-transparent border-white/20">
-                <TableHead className="text-[#7D9FC2] font-semibold">#</TableHead>
-                <TableHead className="text-[#7D9FC2] font-semibold">Machine</TableHead>
-                <TableHead className="text-[#7D9FC2] font-semibold">Date</TableHead>
-                <TableHead className="text-[#7D9FC2] font-semibold">Time</TableHead>
-                <TableHead className="text-[#7D9FC2] font-semibold">Booked By</TableHead>
-                <TableHead className="text-[#7D9FC2] font-semibold">Purpose</TableHead>
-                <TableHead className="text-[#7D9FC2] font-semibold">Submitted</TableHead>
-                <TableHead className="text-[#7D9FC2] font-semibold">Status</TableHead>
-                <TableHead className="text-right text-[#7D9FC2] font-semibold">Actions</TableHead>
+                 <TableHead className="font-semibold text-white/50">#</TableHead>
+                 <TableHead className="font-semibold text-white/50">Machine</TableHead>
+                 <TableHead className="font-semibold text-white/50">Date</TableHead>
+                 <TableHead className="font-semibold text-white/50">Time</TableHead>
+                 <TableHead className="font-semibold text-white/50">Booked By</TableHead>
+                  <TableHead className="hidden font-semibold text-white/50 lg:table-cell">Purpose</TableHead>
+                  <TableHead className="hidden font-semibold text-white/50 xl:table-cell">Submitted</TableHead>
+                 <TableHead className="font-semibold text-white/50">Status</TableHead>
+                 <TableHead className="text-right font-semibold text-white/50">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={9} className="h-32 text-center text-[#7D9FC2] border-0">Loading…</TableCell></TableRow>
+                 <TableRow><TableCell colSpan={9} className="h-24 border-0 text-center text-white/50">Loading…</TableCell></TableRow>
               ) : filtered.map((b, idx) => (
                 <TableRow key={b.id} className="border-white/20 hover:bg-white/40 border border-white/20 shadow-sm transition-colors">
-                  <TableCell className="text-[#7D9FC2] font-mono text-[12px]">{filtered.length - idx}</TableCell>
-                  <TableCell className="font-semibold text-[#56779D]">{b.machineName}</TableCell>
+                   <TableCell className="font-mono text-[12px] text-white/50">{filtered.length - idx}</TableCell>
+                   <TableCell className="font-semibold text-white">{b.machineName}</TableCell>
                   <TableCell className="text-white/70 text-[13px]">{b.date}</TableCell>
                   <TableCell className="text-white/70 text-[13px]">{b.startTime}–{b.endTime}</TableCell>
                   <TableCell>
-                    <div className="text-[13px] font-medium text-[#56779D]">{b.userName || '—'}</div>
-                    <div className="text-[11px] text-[#7D9FC2]">{b.userEmail}</div>
+                     <div className="text-[13px] font-medium text-white">{b.userName || '—'}</div>
+                     <div className="text-[11px] text-white/50">{b.userEmail}</div>
                   </TableCell>
-                  <TableCell className="text-[#7D9FC2] text-[13px] max-w-[160px] truncate">{b.purpose}</TableCell>
-                  <TableCell className="text-[#7D9FC2] text-[12px]">{formatDateTime(b.createdAt)}</TableCell>
+                   <TableCell className="hidden max-w-[160px] truncate text-[13px] text-white/50 lg:table-cell">{b.purpose}</TableCell>
+                   <TableCell className="hidden text-[12px] text-white/50 xl:table-cell">{formatDateTime(b.createdAt)}</TableCell>
                   <TableCell>
-                    <span className={cn('text-[10px] px-2.5 py-1 rounded-[6px] font-bold uppercase tracking-widest border border-transparent', STATUS_COLOR[b.status] || 'bg-white/40 border border-white/20 shadow-sm text-[#7D9FC2]')}>{b.status}</span>
+                     <span className={cn('rounded-[6px] border border-transparent px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest', STATUS_COLOR[b.status] || 'bg-white/10 text-white/50')}>{b.status}</span>
                   </TableCell>
                   <TableCell className="text-right">
                     {b.status === 'approved' && (
