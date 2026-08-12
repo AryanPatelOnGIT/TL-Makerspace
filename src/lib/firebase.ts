@@ -10,17 +10,19 @@ import {
 
 const rawApiKey = import.meta.env.VITE_FIREBASE_API_KEY ||
   (import.meta.env.VITE_FIREBASE_API_KEY_B64
-    ? atob(import.meta.env.VITE_FIREBASE_API_KEY_B64)
+    ? (() => {
+        try { return atob(import.meta.env.VITE_FIREBASE_API_KEY_B64) }
+        catch {
+          throw new Error(
+            'Firebase API key is not configured. VITE_FIREBASE_API_KEY_B64 contains malformed Base64. ' +
+            'Set VITE_FIREBASE_API_KEY or a valid VITE_FIREBASE_API_KEY_B64, ' +
+            'or enable emulator mode with VITE_USE_EMULATORS=true.'
+          )
+        }
+      })()
     : undefined)
 
 const isEmulatorMode = import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true'
-
-if (!rawApiKey && !isEmulatorMode) {
-  throw new Error(
-    'Firebase API key is not configured. Set VITE_FIREBASE_API_KEY or VITE_FIREBASE_API_KEY_B64, ' +
-    'or enable emulator mode with VITE_USE_EMULATORS=true.'
-  )
-}
 
 const firebaseConfig = {
   apiKey: rawApiKey || (isEmulatorMode ? 'fake-api-key-emulator' : ''),

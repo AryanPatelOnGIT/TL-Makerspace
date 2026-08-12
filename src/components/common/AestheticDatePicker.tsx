@@ -84,26 +84,26 @@ export function AestheticDatePicker({
     setIsOpen(false)
   }
 
-  const handlePreset = (daysToAdd: number) => {
+  const buildPresetDate = (daysToAdd: number) => {
     const d = new Date()
     d.setDate(d.getDate() + daysToAdd)
     const yyyy = d.getFullYear()
     const mm = String(d.getMonth() + 1).padStart(2, '0')
     const dd = String(d.getDate()).padStart(2, '0')
     const dateStr = `${yyyy}-${mm}-${dd}`
+    return { dateStr, dateObj: d }
+  }
+
+  const handlePreset = (daysToAdd: number) => {
+    const { dateStr, dateObj } = buildPresetDate(daysToAdd)
     if ((minDate && dateStr < minDate) || (maxDate && dateStr > maxDate)) return
     onChange(dateStr)
-    setViewDate(d)
+    setViewDate(dateObj)
     setIsOpen(false)
   }
 
   const isPresetDisabled = (daysToAdd: number) => {
-    const d = new Date()
-    d.setDate(d.getDate() + daysToAdd)
-    const yyyy = d.getFullYear()
-    const mm = String(d.getMonth() + 1).padStart(2, '0')
-    const dd = String(d.getDate()).padStart(2, '0')
-    const dateStr = `${yyyy}-${mm}-${dd}`
+    const { dateStr } = buildPresetDate(daysToAdd)
     return Boolean((minDate && dateStr < minDate) || (maxDate && dateStr > maxDate))
   }
 
@@ -144,7 +144,11 @@ export function AestheticDatePicker({
           <button
             type="button"
             onClick={() => onChange('')}
-            className="shrink-0 p-2 text-white/40 hover:text-white rounded-md transition-colors border border-transparent hover:border-white/20"
+            disabled={disabled}
+            className={cn(
+              'shrink-0 p-2 text-white/40 hover:text-white rounded-md transition-colors border border-transparent hover:border-white/20',
+              disabled && 'opacity-50 cursor-not-allowed'
+            )}
             aria-label="Clear date"
           >
             <X className="h-3.5 w-3.5" />
@@ -243,26 +247,30 @@ export function AestheticDatePicker({
               )
 
               return (
-                <button
+                <div
                   key={dayNum}
-                  type="button"
-                  disabled={isDisabled}
-                  onClick={() => handleSelectDay(dayNum)}
-                  aria-label={`${monthNames[month]} ${dayNum}, ${year}`}
-                  {...(isToday ? { 'aria-current': 'date' as const } : {})}
+                  role="gridcell"
                   {...(isSelected ? { 'aria-selected': true } : {})}
-                  className={cn(
-                    'h-8 w-8 text-xs font-bold rounded-lg flex items-center justify-center transition-all',
-                    isSelected
-                      ? 'bg-lime text-black font-extrabold shadow-sm'
-                      : isToday
-                      ? 'border border-lime/60 text-lime bg-lime/10'
-                      : 'hover:bg-white/10 text-white/80',
-                    isDisabled && 'opacity-25 cursor-not-allowed hover:bg-transparent'
-                  )}
                 >
-                  {dayNum}
-                </button>
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleSelectDay(dayNum)}
+                    aria-label={`${monthNames[month]} ${dayNum}, ${year}`}
+                    {...(isToday ? { 'aria-current': 'date' as const } : {})}
+                    className={cn(
+                      'h-8 w-8 text-xs font-bold rounded-lg flex items-center justify-center transition-all',
+                      isSelected
+                        ? 'bg-lime text-black font-extrabold shadow-sm'
+                        : isToday
+                        ? 'border border-lime/60 text-lime bg-lime/10'
+                        : 'hover:bg-white/10 text-white/80',
+                      isDisabled && 'opacity-25 cursor-not-allowed hover:bg-transparent'
+                    )}
+                  >
+                    {dayNum}
+                  </button>
+                </div>
               )
             })}
           </div>

@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profileUnsub = null
         }
 
-        if (u) {
+          if (u) {
           profileUnsub = onSnapshot(
             doc(db, 'users', u.uid),
             (docSnap: any) => {
@@ -74,16 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               } else {
                 setProfile(null)
               }
-              if (!authReady) setAuthReady(true)
+              setAuthReady(true)
             },
             () => {
               setProfile(null)
-              if (!authReady) setAuthReady(true)
+              setAuthReady(true)
             },
           )
         } else {
           setProfile(null)
-          if (!authReady) setAuthReady(true)
+          setAuthReady(true)
         }
       })
 
@@ -96,6 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cleanup: () => void = () => {}
     init().then((c) => {
       if (c && !cancelled) cleanup = c
+    }).catch((err) => {
+      console.error('Auth initialization failed:', err)
+      setAuthReady(true)
     })
 
     return () => {
@@ -105,8 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const rawRole = profile?.role ?? null
-  const role = rawRole
-  const normalizedRole = role?.toLowerCase().replace(/[^a-z]/g, '') ?? ''
+  const normalizedRole = rawRole?.toLowerCase().replace(/[^a-z]/g, '') ?? ''
 
   const adminRoles = ['superadmin', 'admin']
   const staffRoles = ['superadmin', 'admin', 'faculty', 'labassistant']
@@ -116,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, role, loading: !authReady, authReady, isAdmin, isStaff, refetchProfile }}
+      value={{ user, profile, role: rawRole, loading: !authReady, authReady, isAdmin, isStaff, refetchProfile }}
     >
       {children}
     </AuthContext.Provider>

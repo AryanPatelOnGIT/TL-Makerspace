@@ -61,6 +61,7 @@ export default function EquipmentFormPage() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<EquipmentFormData>({
     resolver: zodResolver(equipmentSchema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     defaultValues: {
+      tier: 'bookable',
       status: 'available',
       healthStatus: 'good',
       requiresTraining: true,
@@ -73,6 +74,7 @@ export default function EquipmentFormPage() {
       reset({
         machineId: existing.machineId,
         name: existing.name,
+        tier: existing.tier,
         category: existing.category as any,
         description: existing.description,
         manufacturer: existing.manufacturer,
@@ -176,6 +178,12 @@ export default function EquipmentFormPage() {
             <CardDescription>Current operational status and safety requirements.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField label="Tier" required error={errors.tier?.message}>
+              <select className={selectClasses} {...register('tier')}>
+                {['bookable', 'checkout', 'freely_available'].map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
+              </select>
+            </FormField>
+
             <FormField label="Status" required>
               <select className={selectClasses} {...register('status')}>
                 {['available','reserved','in_use','under_maintenance','out_of_service','retired'].map(s => <option key={s} value={s}>{s.replace('_',' ')}</option>)}

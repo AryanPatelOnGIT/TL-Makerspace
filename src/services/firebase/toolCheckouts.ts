@@ -2,6 +2,8 @@ import {
   collection,
   query,
   where,
+  orderBy,
+  limit,
   getDocs,
   serverTimestamp,
   doc,
@@ -87,10 +89,12 @@ export async function getActiveUserCheckouts(userId: string): Promise<ToolChecko
  */
 export async function getAllCheckouts(): Promise<ToolCheckout[]> {
   const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
-  const snap = await getDocs(ref)
+  const q = query(ref, orderBy('createdAt', 'desc'), limit(500))
+  const snap = await getDocs(q)
+  const epoch = new Timestamp(0, 0)
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }) as ToolCheckout)
-    .sort((a, b) => b.createdAt?.toMillis?.() - a.createdAt?.toMillis?.())
+    .sort((a, b) => (b.createdAt ?? epoch).toMillis() - (a.createdAt ?? epoch).toMillis())
 }
 
 /**

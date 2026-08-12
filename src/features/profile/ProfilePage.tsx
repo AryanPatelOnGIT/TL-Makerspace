@@ -46,16 +46,18 @@ function Field({
   label,
   required,
   error,
+  htmlFor,
   children,
 }: {
   label: string
   required?: boolean
   error?: string
+  htmlFor?: string
   children: React.ReactNode
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-bold uppercase tracking-wider text-white/60">
+      <label htmlFor={htmlFor} className="text-xs font-bold uppercase tracking-wider text-white/60">
         {label} {required && <span className="text-pink">*</span>}
       </label>
       {children}
@@ -140,7 +142,7 @@ export default function ProfilePage() {
     }, 1000)
     return () => { if (cooldownRef.current) clearInterval(cooldownRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [feedbackStorageKey])
 
   const wordCount = countWords(feedbackText)
   const wordLimitExceeded = wordCount > MAX_WORDS
@@ -180,9 +182,23 @@ export default function ProfilePage() {
     if (profile.userType === 'External Visitor' && (!form.organization.trim() || !form.designation.trim() || !form.purposeOfVisit.trim())) {
       setEditError('Organization, Designation, and Purpose are required.'); return
     }
+
+    const ut = profile.userType as string
+    const shared = { displayName: form.displayName, contact: form.contact }
+    const typeFields: Record<string, string[]> = {
+      'Student': ['universityId', 'department', 'courseName', 'facultyAdvisor'],
+      'Professor or Faculty': ['department', 'researchArea', 'associatedCourse', 'studentsInvolved'],
+      'Venture Studio Startup': ['startupName', 'industryDomain', 'startupBrief', 'labTeamMembers'],
+      'External Visitor': ['organization', 'designation', 'purposeOfVisit', 'referral'],
+    }
+    const applicable = typeFields[ut] ?? []
+    const filtered: Record<string, string> = { ...shared }
+    for (const key of applicable) {
+      filtered[key] = (form as any)[key] ?? ''
+    }
     setSaving(true)
     try {
-      await updateUserProfile(user.uid, form)
+      await updateUserProfile(user.uid, filtered)
       await refetchProfile()
       setEditing(false)
       toast.success('Profile updated!')
@@ -198,8 +214,6 @@ export default function ProfilePage() {
     setFeedbackSubmitting(true)
     const payload = cleanFirestoreData({
       userId: user.uid,
-      userName: profile?.displayName || user.displayName || user.email || 'Lab Member',
-      userEmail: user.email || '',
       message: feedbackText.trim(),
       createdAt: serverTimestamp(),
     })
@@ -349,7 +363,7 @@ export default function ProfilePage() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <Field label="Full Name" required>
+            <Field label="Full Name" required htmlFor="profile-name">
               <input
                 id="profile-name"
                 value={form.displayName}
@@ -358,7 +372,7 @@ export default function ProfilePage() {
                 className="tl-input"
               />
             </Field>
-            <Field label="Contact Number" required>
+            <Field label="Contact Number" required htmlFor="profile-contact">
               <input
                 id="profile-contact"
                 value={form.contact}
@@ -370,22 +384,22 @@ export default function ProfilePage() {
 
             {userType === 'Student' && (
               <>
-                <Field label="University ID" required>
+                <Field label="University ID" required htmlFor="profile-uni-id">
                   <input id="profile-uni-id" value={form.universityId}
                     onChange={(e) => setForm((f) => ({ ...f, universityId: e.target.value }))}
                     placeholder="e.g. AU2440123" className="tl-input" />
                 </Field>
-                <Field label="Department" required>
+                <Field label="Department" required htmlFor="profile-dept">
                   <input id="profile-dept" value={form.department}
                     onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
                     placeholder="e.g. CSE" className="tl-input" />
                 </Field>
-                <Field label="Course / Curriculum">
+                <Field label="Course / Curriculum" htmlFor="profile-course">
                   <input id="profile-course" value={form.courseName}
                     onChange={(e) => setForm((f) => ({ ...f, courseName: e.target.value }))}
                     placeholder="e.g. B.Tech CSE" className="tl-input" />
                 </Field>
-                <Field label="Faculty Advisor">
+                <Field label="Faculty Advisor" htmlFor="profile-advisor">
                   <input id="profile-advisor" value={form.facultyAdvisor}
                     onChange={(e) => setForm((f) => ({ ...f, facultyAdvisor: e.target.value }))}
                     placeholder="Faculty advisor name" className="tl-input" />
@@ -395,23 +409,23 @@ export default function ProfilePage() {
 
             {userType === 'Professor or Faculty' && (
               <>
-                <Field label="Department" required>
+                <Field label="Department" required htmlFor="profile-dept-f">
                   <input id="profile-dept-f" value={form.department}
                     onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
                     placeholder="e.g. Mechanical" className="tl-input" />
                 </Field>
-                <Field label="Research Area" required>
+                <Field label="Research Area" required htmlFor="profile-research">
                   <input id="profile-research" value={form.researchArea}
                     onChange={(e) => setForm((f) => ({ ...f, researchArea: e.target.value }))}
                     placeholder="Your research area" className="tl-input" />
                 </Field>
-                <Field label="Associated Course">
+                <Field label="Associated Course" htmlFor="profile-assoc">
                   <input id="profile-assoc" value={form.associatedCourse}
                     onChange={(e) => setForm((f) => ({ ...f, associatedCourse: e.target.value }))}
                     placeholder="e.g. ME301" className="tl-input" />
                 </Field>
                 <div className="sm:col-span-2">
-                  <Field label="Students Involved">
+                  <Field label="Students Involved" htmlFor="profile-students">
                     <textarea id="profile-students" value={form.studentsInvolved}
                       onChange={(e) => setForm((f) => ({ ...f, studentsInvolved: e.target.value }))}
                       placeholder="Names/IDs of students (optional)"
@@ -423,18 +437,18 @@ export default function ProfilePage() {
 
             {userType === 'Venture Studio Startup' && (
               <>
-                <Field label="Startup Name" required>
+                <Field label="Startup Name" required htmlFor="profile-startup-name">
                   <input id="profile-startup-name" value={form.startupName}
                     onChange={(e) => setForm((f) => ({ ...f, startupName: e.target.value }))}
                     placeholder="Startup's name" className="tl-input" />
                 </Field>
-                <Field label="Industry / Domain" required>
+                <Field label="Industry / Domain" required htmlFor="profile-industry">
                   <input id="profile-industry" value={form.industryDomain}
                     onChange={(e) => setForm((f) => ({ ...f, industryDomain: e.target.value }))}
                     placeholder="e.g. CleanTech" className="tl-input" />
                 </Field>
                 <div className="sm:col-span-2">
-                  <Field label="Brief About Your Startup" required>
+                  <Field label="Brief About Your Startup" required htmlFor="profile-brief">
                     <textarea id="profile-brief" value={form.startupBrief}
                       onChange={(e) => setForm((f) => ({ ...f, startupBrief: e.target.value }))}
                       placeholder="Describe your startup…"
@@ -442,7 +456,7 @@ export default function ProfilePage() {
                   </Field>
                 </div>
                 <div className="sm:col-span-2">
-                  <Field label="Team Members Using the Lab">
+                    <Field label="Team Members Using the Lab" htmlFor="profile-lab-team">
                     <textarea id="profile-lab-team" value={form.labTeamMembers}
                       onChange={(e) => setForm((f) => ({ ...f, labTeamMembers: e.target.value }))}
                       placeholder="Names of team members (optional)"
@@ -454,25 +468,25 @@ export default function ProfilePage() {
 
             {userType === 'External Visitor' && (
               <>
-                <Field label="Organization / Institution" required>
+                <Field label="Organization / Institution" required htmlFor="profile-org">
                   <input id="profile-org" value={form.organization}
                     onChange={(e) => setForm((f) => ({ ...f, organization: e.target.value }))}
                     placeholder="Your organization" className="tl-input" />
                 </Field>
-                <Field label="Designation / Role" required>
+                <Field label="Designation / Role" required htmlFor="profile-designation">
                   <input id="profile-designation" value={form.designation}
                     onChange={(e) => setForm((f) => ({ ...f, designation: e.target.value }))}
                     placeholder="e.g. Researcher" className="tl-input" />
                 </Field>
                 <div className="sm:col-span-2">
-                  <Field label="Purpose of Visit" required>
+                  <Field label="Purpose of Visit" required htmlFor="profile-purpose">
                     <textarea id="profile-purpose" value={form.purposeOfVisit}
                       onChange={(e) => setForm((f) => ({ ...f, purposeOfVisit: e.target.value }))}
                       placeholder="Describe why you are visiting the lab…"
                       className="tl-input min-h-[80px] resize-none" />
                   </Field>
                 </div>
-                <Field label="Referral">
+                <Field label="Referral" htmlFor="profile-referral">
                   <input id="profile-referral" value={form.referral}
                     onChange={(e) => setForm((f) => ({ ...f, referral: e.target.value }))}
                     placeholder="Who referred you? (optional)" className="tl-input" />
@@ -528,6 +542,7 @@ export default function ProfilePage() {
         {feedbackOpen && (
           <div className="border-t border-hairline px-6 pb-6 pt-5 space-y-4 animate-in fade-in duration-200">
             <div className="relative">
+              <label htmlFor="profile-feedback-input" className="sr-only">Feedback message</label>
               <textarea
                 id="profile-feedback-input"
                 value={feedbackText}

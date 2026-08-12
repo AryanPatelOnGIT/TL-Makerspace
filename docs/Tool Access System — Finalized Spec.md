@@ -36,9 +36,9 @@ This also sets up the database backend needed for future analytics (who uses the
 | Step | Component | What happens |
 | --- | --- | --- |
 | 1 | Form 1 — Project Registration | One-time signup. Already live, collecting real responses. |
-| 2 | User &amp; Project Database | Form 1 responses, keyed by email. Looked up (not re-entered) by every later form. |
-| 3a | Form 2A — Book a Machine | Email auto-fills user details. Books a time slot for a digital fabrication machine. |
-| 3b | Form 2B — Checkout a Tool | Email auto-fills user details. Logs a power/hand tool checkout. |
+| 2 | User &amp; Project Database | Firestore — user and project data persisted server-side. |
+| 3a | Form 2A — Book a Machine | Project-first flow: user selects an active project, then a machine and time slot. |
+| 3b | Form 2B — Checkout a Tool | User selects a registered project, then logs power/hand tool checkouts. |
 | 4a | Machine booking log | Creates a Google Calendar event + logs consumables (filament/material) used. |
 | 4b | Tool checkout log | Logs the checkout with location tracking (In Lab / Taking Outside Lab). |
 | 5 | Gmail notifications | Confirmations on submit, 24-hour booking reminders, overdue tool alerts, conflict rejections. |
@@ -79,7 +79,7 @@ This also sets up the database backend needed for future analytics (who uses the
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| Email | Short answer, validated | Universal key — same auto-lookup as Form 2A |
+| Project | Dropdown | Required — links checkout to a registered project |
 | Action | Multiple choice | Checking Out / Returning |
 | Tool Category | Dropdown | Power Tools / Hand Tools |
 | Specific Tool | Short answer | Matched against TL inventory sheet on the Viewer side |

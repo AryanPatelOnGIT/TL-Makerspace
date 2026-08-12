@@ -45,7 +45,7 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
               key={item.id}
               type={item.onClick ? 'button' : undefined}
               onClick={item.onClick}
-              className="group flex flex-col justify-between p-4 lg:p-5 text-left hover:bg-white/[0.04] focus:bg-white/[0.05] focus:outline-none transition-colors duration-150"
+              className="group flex flex-col justify-between p-4 lg:p-5 text-left hover:bg-white/[0.04] focus:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-1 ring-offset-near-black transition-colors duration-150"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.1em] text-white/45 group-hover:text-white/75 transition-colors">

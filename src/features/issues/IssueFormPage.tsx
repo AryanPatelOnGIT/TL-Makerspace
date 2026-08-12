@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { COLLECTIONS } from '@/services/firebase/firestore'
-import { doc, getDoc, collection, addDoc, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
 import { ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react'
@@ -38,17 +38,21 @@ export default function IssueFormPage() {
   const onSubmit = async (data: FormData) => {
     if (!user || !profile) { toast.error('Sign in required'); return }
     try {
+      const now = serverTimestamp()
       const payload = cleanFirestoreData({
         ...data,
         userId: user.uid,
         userName: profile.displayName || user.displayName || user.email!,
         userEmail: user.email!,
         status: 'open',
+        createdAt: now,
+        updatedAt: now,
       })
       await addDoc(collection(db, COLLECTIONS.ISSUES), payload)
       toast.success('Issue reported. Thank you!')
       navigate('/')
-    } catch {
+    } catch (e) {
+      console.error('Failed to submit report:', e)
       toast.error('Failed to submit report. Please try again.')
     }
   }

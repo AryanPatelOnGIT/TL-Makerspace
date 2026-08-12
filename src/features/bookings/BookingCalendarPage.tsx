@@ -14,10 +14,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PageHeader } from '@/components/common/PageHeader'
 import { DataPanel } from '@/components/common/DataPanel'
 
+function startOfWeek(date: Date): Date {
+  const d = new Date(date)
+  d.setDate(d.getDate() - (d.getDay() + 6) % 7)
+  return d
+}
+
 function getWeekDays(startDate: Date): string[] {
   const days = []
-  const date = new Date(startDate)
-  date.setDate(date.getDate() - (date.getDay() + 6) % 7)
+  const date = startOfWeek(startDate)
 
   for (let index = 0; index < 7; index += 1) {
     days.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`)
@@ -32,11 +37,7 @@ const HOURS = Array.from({ length: 12 }, (_, index) => `${String(index + 8).padS
 export default function BookingCalendarPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [weekStart, setWeekStart] = useState(() => {
-    const date = new Date()
-    date.setDate(date.getDate() - (date.getDay() + 6) % 7)
-    return date
-  })
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
 
   const weekDays = getWeekDays(weekStart)
 
@@ -77,9 +78,7 @@ export default function BookingCalendarPage() {
   }
 
   const showCurrentWeek = () => {
-    const date = new Date()
-    date.setDate(date.getDate() - (date.getDay() + 6) % 7)
-    setWeekStart(date)
+    setWeekStart(startOfWeek(new Date()))
   }
 
   return (

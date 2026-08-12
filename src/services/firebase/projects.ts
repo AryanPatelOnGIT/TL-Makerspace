@@ -67,13 +67,11 @@ export async function createProject(
  * Only returns active/pending projects (not rejected/completed).
  * React Query caches this — only fetched once per session.
  */
-export async function getUserProjects(userId: string): Promise<Project[]> {
+export async function getUserProjects(userId: string, statusFilter?: string): Promise<Project[]> {
   const ref = collection(db, COLLECTIONS.PROJECTS)
-  const q = query(
-    ref,
-    where('userId', '==', userId),
-    where('status', '==', 'active')
-  )
+  const constraints: any[] = [where('userId', '==', userId)]
+  if (statusFilter) constraints.push(where('status', '==', statusFilter))
+  const q = query(ref, ...constraints)
   const snap = await getDocs(q)
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }) as Project)

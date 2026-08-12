@@ -133,6 +133,8 @@ export default function OnboardingPage() {
   }, [profile, user, reset, setValue])
 
   const userType = watch('userType')
+  const safetyAgreementAccepted = watch('safetyAgreementAccepted')
+  const termsAccepted = watch('termsAccepted')
   const STEPS = ['Who are you?', 'Your details', 'Agreements']
 
   const handleNextStep = async () => {
@@ -402,14 +404,14 @@ export default function OnboardingPage() {
                   <AgreementCard
                     title="Safety Agreement"
                     description="I agree to follow lab safety guidelines and return all tools and equipment after use."
-                    inputProps={register('safetyAgreementAccepted')}
+                    inputProps={{ ...register('safetyAgreementAccepted'), checked: safetyAgreementAccepted }}
                     error={errors.safetyAgreementAccepted?.message}
                     required
                   />
                   <AgreementCard
                     title="Terms Agreement"
                     description="I understand that equipment booking is subject to availability and coordinator approval."
-                    inputProps={register('termsAccepted')}
+                    inputProps={{ ...register('termsAccepted'), checked: termsAccepted }}
                     error={errors.termsAccepted?.message}
                     required
                   />

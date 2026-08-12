@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, Controller, type SubmitErrorHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -93,7 +93,7 @@ export default function BookingFormPage() {
   // User's active projects for the project selector
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ['projects', 'user', user?.uid],
-    queryFn: () => getUserProjects(user!.uid),
+    queryFn: () => getUserProjects(user!.uid, 'active'),
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   })
@@ -118,6 +118,13 @@ export default function BookingFormPage() {
   const is3DPrinter      = selectedMachine?.category === 'Digital Fabrication' && selectedMachine?.name.toLowerCase().includes('printer')
   const isLaserCutter    = selectedMachine?.name.toLowerCase().includes('laser')
   const selectableMachines = machines.filter(m => m.status === 'available' || m.status === 'reserved')
+
+  React.useEffect(() => {
+    const machineParam = params.get('machine')
+    if (machineParam && machines.length > 0 && !selectableMachines.some(m => m.id === machineParam)) {
+      setValue('equipmentId', '')
+    }
+  }, [machines, selectableMachines, params, setValue])
 
   const prevProjectId = React.useRef<string | undefined>(undefined)
 
@@ -177,9 +184,9 @@ export default function BookingFormPage() {
     }
   }
 
-  const onInvalid = (formErrors: any) => {
+  const onInvalid: SubmitErrorHandler<FormData> = (formErrors) => {
     const messages = Object.values(formErrors)
-      .map((e: any) => e?.message)
+      .map((e) => e?.message)
       .filter(Boolean)
     if (messages.length > 0) {
       toast.error(`Booking form incomplete: ${messages[0]}`)
@@ -259,7 +266,7 @@ export default function BookingFormPage() {
                   'tl-input',
                   errors.equipmentId && 'border-pink'
                 )}
-                disabled={machinesLoading || machinesError || machines.length === 0}
+                disabled={machinesLoading || machinesError || selectableMachines.length === 0}
               >
                 <option value="">— Select a machine —</option>
                 {selectableMachines.map(m => (
@@ -285,7 +292,7 @@ export default function BookingFormPage() {
         />
 
         {/* ── Date & Time ───────────────────────────────────────────── */}
-        {watchEquipmentId && (
+        {watchProjectId && watchEquipmentId && (
           <Card className="rounded-card border border-hairline bg-near-black text-white">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-white">Date & Time Slot</CardTitle>
@@ -392,7 +399,7 @@ export default function BookingFormPage() {
         )}
 
         {/* ── Purpose ───────────────────────────────────────────────── */}
-        {watchEquipmentId && (
+        {watchProjectId && watchEquipmentId && (
           <Card>
             <CardHeader><CardTitle>Purpose of Use</CardTitle></CardHeader>
             <CardContent className="space-y-4">
@@ -460,7 +467,7 @@ export default function BookingFormPage() {
         )}
 
         {/* ── Safety Agreement (Spec 2 required checkbox) ───────────── */}
-        {watchEquipmentId && (
+        {watchProjectId && watchEquipmentId && (
           <AgreementCard
             title="Safety Agreement"
             description="I have received or will receive proper training for this machine, and I agree to follow all lab safety guidelines."

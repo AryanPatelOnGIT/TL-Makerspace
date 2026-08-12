@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { FieldValue, Timestamp, GeoPoint, DocumentReference, Bytes } from 'firebase/firestore'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -34,13 +35,21 @@ export function generateId(prefix: string, count: number): string {
   return `${prefix}-${String(count + 1).padStart(3, '0')}`
 }
 
+function isFirestoreSentinel(value: unknown): boolean {
+  return value instanceof FieldValue ||
+    value instanceof Timestamp ||
+    value instanceof GeoPoint ||
+    value instanceof DocumentReference ||
+    value instanceof Bytes
+}
+
 export function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
   if (obj === null || typeof obj !== 'object') return obj
-  if (typeof (obj as any)._methodName === 'string') return obj
+  if (isFirestoreSentinel(obj)) return obj
   const cleaned: Record<string, any> = {}
   for (const [key, value] of Object.entries(obj)) {
     if (value === undefined) continue
-    if (typeof (value as any)?._methodName === 'string') {
+    if (isFirestoreSentinel(value)) {
       cleaned[key] = value
       continue
     }
@@ -48,14 +57,13 @@ export function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
       value !== null &&
       typeof value === 'object' &&
       !Array.isArray(value) &&
-      !(value instanceof Date) &&
-      typeof (value as any).toMillis !== 'function'
+      !(value instanceof Date)
     ) {
       cleaned[key] = cleanFirestoreData(value)
     } else if (Array.isArray(value)) {
       cleaned[key] = value.filter(item => item !== undefined).map(item => {
         if (item === null || typeof item !== 'object') return item
-        if (item instanceof Date || typeof (item as any).toMillis === 'function') return item
+        if (item instanceof Date || isFirestoreSentinel(item)) return item
         return cleanFirestoreData(item)
       })
     } else {

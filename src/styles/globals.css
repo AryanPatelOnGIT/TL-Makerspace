@@ -227,10 +227,9 @@
 
   .tl-auth-shell {
     display: flex;
-    height: 100svh;
-    max-height: 100svh;
+    min-height: 100svh;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
     background: var(--color-ink);
     color: var(--color-paper);
   }

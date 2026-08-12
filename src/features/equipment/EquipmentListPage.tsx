@@ -13,12 +13,12 @@ import { FilterChip } from '@/components/common/FilterChip'
 import { EntityCard } from '@/components/common/EntityCard'
 
 const STATUS_CONFIG = {
-  available:         { label: 'Available',      chip: 'bg-lime text-black font-bold' },
-  reserved:          { label: 'Reserved',       chip: 'bg-orange text-black font-bold' },
-  in_use:            { label: 'In Use',         chip: 'bg-orange text-black font-bold' },
-  under_maintenance: { label: 'Maintenance',    chip: 'bg-pink/20 text-pink border border-pink/30 font-bold' },
-  out_of_service:    { label: 'Out of Service', chip: 'bg-pink text-black font-bold' },
-  retired:           { label: 'Retired',        chip: 'bg-white/10 text-white/50 border border-hairline' },
+  available:         { label: 'Available',      chip: 'bg-lime text-black font-bold',      dot: 'bg-lime',            pulse: false },
+  reserved:          { label: 'Reserved',       chip: 'bg-orange text-black font-bold',    dot: 'bg-orange animate-pulse', pulse: true },
+  in_use:            { label: 'In Use',         chip: 'bg-orange text-black font-bold',    dot: 'bg-orange animate-pulse', pulse: true },
+  under_maintenance: { label: 'Maintenance',    chip: 'bg-pink/20 text-pink border border-pink/30 font-bold', dot: 'bg-pink', pulse: false },
+  out_of_service:    { label: 'Out of Service', chip: 'bg-pink text-black font-bold',      dot: 'bg-pink',            pulse: false },
+  retired:           { label: 'Retired',        chip: 'bg-white/10 text-white/50 border border-hairline', dot: 'bg-white/40', pulse: false },
 } as const
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -87,6 +87,7 @@ export default function EquipmentListPage() {
                 <input
                   type="text"
                   placeholder="Search by name or ID..."
+                  aria-label="Search equipment by name or ID"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="w-full h-10 pl-10 pr-4 rounded-xl bg-near-black border border-hairline text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-white/30"
@@ -133,9 +134,6 @@ export default function EquipmentListPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map(e => {
             const cfg = STATUS_CONFIG[e.status] ?? STATUS_CONFIG.available
-            const pulse = e.status === 'in_use' || e.status === 'reserved'
-            const isDown = e.status === 'under_maintenance' || e.status === 'out_of_service' || e.status === 'retired'
-            const dotColorClass = isDown ? 'bg-pink' : pulse ? 'bg-orange animate-pulse' : 'bg-lime'
 
             return (
               <EntityCard key={e.id}>
@@ -150,7 +148,7 @@ export default function EquipmentListPage() {
                   )}
                   {/* Status Overlay Badge */}
                   <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                    <span className={cn('w-2 h-2 rounded-full', dotColorClass)} />
+                    <span className={cn('w-2 h-2 rounded-full', cfg.dot)} />
                     <span className="text-white/90 font-bold text-[10px] uppercase tracking-wider leading-none">
                       {cfg.label}
                     </span>

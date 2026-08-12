@@ -1,6 +1,9 @@
 const CACHE_NAME = 'tl-v1'
 
-self.addEventListener('install', () => {
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.add('/'))
+  )
   self.skipWaiting()
 })
 
@@ -17,7 +20,13 @@ self.addEventListener('fetch', (event) => {
 
   if (request.destination === 'document') {
     event.respondWith(
-      fetch(request).catch(() => caches.match(request))
+      fetch(request).then((response) => {
+        const clone = response.clone()
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+        )
+        return response
+      }).catch(() => caches.match(request))
     )
     return
   }

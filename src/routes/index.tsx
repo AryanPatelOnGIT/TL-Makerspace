@@ -70,9 +70,8 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading, authReady } = useAuth()
+  const { user, profile, authReady } = useAuth()
   if (!authReady) return <>{children}</>
-  if (loading) return <LoadingSpinner fullScreen />
   if (user) {
     if (!profile || !profile.contact) return <Navigate to="/onboarding" replace />
     return <Navigate to="/" replace />
