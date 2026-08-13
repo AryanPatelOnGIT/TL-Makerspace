@@ -67,7 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profileUnsub = null
         }
 
-          if (u) {
+        if (u) {
+          // Reset to loading state before the first snapshot arrives for the
+          // new user — prevents the previous user's profile from being visible.
+          setProfile(null)
+          setAuthReady(false)
           profileUnsub = onSnapshot(
             doc(db, 'users', u.uid),
             (docSnap: DocumentSnapshot<DocumentData>) => {

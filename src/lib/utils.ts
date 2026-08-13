@@ -82,7 +82,7 @@ export function cleanFirestoreData<T extends Record<string, any>>(obj: T): T {
 }
 
 export function mapDocs<T extends { id?: string }>(snap: { docs: QueryDocumentSnapshot<DocumentData>[] }): T[] {
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as unknown as T))
+  return snap.docs.map(d => ({ ...d.data(), id: d.id } as unknown as T))
 }
 
 export function debugLog(...args: unknown[]): void {

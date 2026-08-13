@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getCountFromServer, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
+import { getCountFromServer, collection, query, where, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { toast } from 'sonner'
 import { COLLECTIONS } from '@/services/firebase/firestore'
@@ -54,7 +54,9 @@ export default function AdminDashboard() {
       const col = collection(db, COLLECTIONS.EQUIPMENT)
       let count = 0
       for (const item of EQUIPMENT_SEED) {
-        await addDoc(col, { ...item, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+        // Use machineId as the document ID so re-runs are idempotent.
+        // setDoc with merge:true skips already-seeded items without overwriting manual edits.
+        await setDoc(doc(col, item.machineId), { ...item, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true })
         count++
       }
       setSeeded(true)
@@ -80,7 +82,7 @@ export default function AdminDashboard() {
       />
 
       <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-3 sm:gap-4">
-        <KpiTile label="Total Users" value={totalUsers} icon={Users} href="/admin/users" color="#DDF237" footer="Manage →" />
+        <KpiTile label="Total Users" value={totalUsers} icon={Users} href="/admin/users" color="#E0EF4A" footer="Manage →" />
         <KpiTile label="Total Bookings" value={totalBookings} icon={Calendar} href="/admin/bookings" color="#FFF4BE" footer="Manage →" />
         <KpiTile label="Total Projects" value={totalProjects} icon={FolderKanban} href="/admin/projects" color="#E1D7A8" footer="Manage →" />
         <KpiTile label="Open Issues" value={openIssues} icon={AlertTriangle} href="/admin/issues" color="#EC68D8" footer="Manage →" />
@@ -91,7 +93,7 @@ export default function AdminDashboard() {
       <div className="mb-6 grid min-w-0 gap-4 xl:grid-cols-2 sm:gap-5">
         <DataPanel title="Tool Checkout Status">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-            <div className="tl-kpi-tile" style={{ backgroundColor: '#DDF237' }}>
+            <div className="tl-kpi-tile" style={{ backgroundColor: '#E0EF4A' }}>
                <span className="tl-kpi-label text-black/60">Active</span>
                <span className="tl-kpi-value text-black">{activeCheckoutCount}</span>
             </div>
@@ -139,7 +141,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
           {[
             { label: 'Review Bookings', href: '/admin/bookings', bg: '#FFB13F' },
-            { label: 'Review Projects', href: '/admin/projects', bg: '#DDF237' },
+            { label: 'Review Projects', href: '/admin/projects', bg: '#E0EF4A' },
             { label: 'Manage Users', href: '/admin/users', bg: '#514AF1', fg: '#fff' },
             { label: 'Resolve Issues', href: '/admin/issues', bg: '#EC68D8' },
             { label: 'Checkout History', href: '/checkout/history', bg: '#191919', fg: '#fff' },

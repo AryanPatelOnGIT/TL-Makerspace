@@ -210,11 +210,13 @@ service cloud.firestore {
         && request.resource.data.message.size() > 0
         && request.resource.data.message.size() <= 2000
         && request.resource.data.createdAt == request.time
-        && !('userName' in request.resource.data)
-        && !('userEmail' in request.resource.data)
-        // Rate limit: at most 1 feedback per user per 5-minute window
+        // Exhaustive allowlist — rejects any extra field the client might inject
+        && request.resource.data.keys().hasOnly(['userId', 'message', 'createdAt'])
+        // Rate limit: at most 1 feedback per user per 5-minute window.
+        // NOTE: the document ID is client-predictable; replace with a Cloud Function
+        // or server-enforced flow if stricter rate limiting is required.
         && !exists(/databases/$(database)/documents/feedback/$(request.auth.uid + '_' + string((request.time.toMillis() - 300000) / 300000)))
-        && request.resource.id == request.auth.uid + '_' + string(floor(request.time.toMillis() / 300000));
+        && request.resource.id == request.auth.uid + '_' + string(math.floor(request.time.toMillis() / 300000));
       // No one can edit or delete feedback
       allow update, delete: if false;
     }

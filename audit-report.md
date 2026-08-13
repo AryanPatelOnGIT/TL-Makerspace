@@ -152,7 +152,7 @@ The `firestore.rules` file (225 lines) is **well-structured** with:
 
 | # | Severity | Issue | Location |
 |---|----------|-------|----------|
-| 1 | **High** | **Missing HTTP security headers** — No CSP, HSTS, X-Frame-Options, X-Content-Type-Options, or Referrer-Policy | `firebase.json` (lines 15-34) |
+| 1 | ~~**High**~~ **Remediated** | ~~**Missing HTTP security headers**~~ **HTTP security headers implemented** — CSP, HSTS, X-Frame-Options, X-Content-Type-Options, and Referrer-Policy are now set | `firebase.json` (headers block, lines 34-58) |
 | 2 | **High** | **Client-side-only rate limiting** — Feedback cooldown uses bypassable `localStorage` | `src/features/profile/ProfilePage.tsx:23,99-149` |
 | 3 | **High** | **No server-side feedback rate limit** — Firestore rules allow unlimited authenticated creates | `firestore.rules:207-216` |
 | 4 | **Medium** | **4 npm audit highs** — postcss, react-router, nanoid | See §3.1 |
