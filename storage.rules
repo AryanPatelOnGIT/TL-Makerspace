@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ================================================================
+    // EQUIPMENT IMAGES
+    // Only authenticated users can write (staff check enforced in app).
+    // Restricted to jpeg/png/webp under 5 MB.
+    // All authenticated users can read (images shown in equipment catalog).
+    // ================================================================
+    match /equipment/{equipmentId}/{fileName} {
+      allow read:   if request.auth != null;
+      allow write:  if request.auth != null
+                    && request.resource.size <= 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if request.auth != null;
+    }
+
+    // ================================================================
+    // DEFAULT DENY — everything else
+    // ================================================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -7,6 +7,7 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 
 const rawApiKey = import.meta.env.VITE_FIREBASE_API_KEY ||
   (import.meta.env.VITE_FIREBASE_API_KEY_B64
@@ -58,3 +59,6 @@ if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true') {
   connectAuthEmulator(auth, 'http://localhost:9099')
   connectFirestoreEmulator(db, 'localhost', 8080)
 }
+
+// Firebase Storage (images, manuals, safety docs)
+export const storage = getStorage(app)

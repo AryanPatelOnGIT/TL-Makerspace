@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { getCountFromServer, collection, query, where, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { getCountFromServer, collection, query, where, doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { toast } from 'sonner'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { getAllActiveCheckouts, isCheckoutOverdue } from '@/services/firebase/toolCheckouts'
 import { EQUIPMENT_SEED } from '@/../scripts/seedEquipment'
-import { Users, Calendar, Package, FolderKanban, AlertTriangle, Bell, ShieldCheck, Database, CheckCircle2 } from 'lucide-react'
+import { Users, Calendar, Package, FolderKanban, AlertTriangle, Bell, ShieldCheck, Database, CheckCircle2, Wrench } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { DataPanel } from '@/components/common/DataPanel'
 import { KpiTile } from '@/components/common/KpiTile'
@@ -17,8 +17,8 @@ function useCount(collectionName: string, field?: string, value?: string) {
   return useQuery({
     queryKey: ['count', collectionName, field, value],
     queryFn: async () => {
-      const ref = collection(db, collectionName)
-      const q = field ? query(ref, where(field, '==', value)) : ref
+      const ref  = collection(db, collectionName)
+      const q    = field ? query(ref, where(field, '==', value)) : ref
       const snap = await getCountFromServer(q as ReturnType<typeof collection>)
       return snap.data().count
     },
@@ -27,12 +27,12 @@ function useCount(collectionName: string, field?: string, value?: string) {
 }
 
 export default function AdminDashboard() {
-  const { data: totalUsers = 0 } = useCount(COLLECTIONS.USERS)
-  const { data: totalBookings = 0 } = useCount(COLLECTIONS.BOOKINGS)
-  const { data: totalProjects = 0 } = useCount(COLLECTIONS.PROJECTS)
-  const { data: openIssues = 0 } = useCount(COLLECTIONS.ISSUES, 'status', 'open')
-  const { data: lowStock = 0 } = useCount(COLLECTIONS.INVENTORY, 'status', 'low_stock')
-  const { data: outOfStock = 0 } = useCount(COLLECTIONS.INVENTORY, 'status', 'out_of_stock')
+  const { data: totalUsers     = 0 } = useCount(COLLECTIONS.USERS)
+  const { data: totalBookings  = 0 } = useCount(COLLECTIONS.BOOKINGS)
+  const { data: totalProjects  = 0 } = useCount(COLLECTIONS.PROJECTS)
+  const { data: openIssues     = 0 } = useCount(COLLECTIONS.ISSUES,    'status', 'open')
+  const { data: lowStock       = 0 } = useCount(COLLECTIONS.INVENTORY, 'status', 'low_stock')
+  const { data: outOfStock     = 0 } = useCount(COLLECTIONS.INVENTORY, 'status', 'out_of_stock')
   const { data: totalEquipment = 0 } = useCount(COLLECTIONS.EQUIPMENT)
 
   const { data: allCheckouts = [] } = useQuery({
@@ -41,10 +41,10 @@ export default function AdminDashboard() {
     staleTime: 2 * 60 * 1000,
   })
   const activeCheckoutCount = allCheckouts.filter(c => !c.returnedAt).length
-  const overdueCount = allCheckouts.filter(isCheckoutOverdue).length
+  const overdueCount        = allCheckouts.filter(isCheckoutOverdue).length
 
-  const [isSeeding, setIsSeeding] = useState(false)
-  const [seeded, setSeeded] = useState(false)
+  const [isSeeding,     setIsSeeding]     = useState(false)
+  const [seeded,        setSeeded]        = useState(false)
   const [seedDialogOpen, setSeedDialogOpen] = useState(false)
 
   const handleSeed = async () => {
@@ -81,15 +81,18 @@ export default function AdminDashboard() {
         }
       />
 
+      {/* ── KPI tiles ─────────────────────────────────────────────────────── */}
       <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-3 sm:gap-4">
-        <KpiTile label="Total Users" value={totalUsers} icon={Users} href="/admin/users" color="#E0EF4A" footer="Manage →" />
-        <KpiTile label="Total Bookings" value={totalBookings} icon={Calendar} href="/admin/bookings" color="#FFF4BE" footer="Manage →" />
-        <KpiTile label="Total Projects" value={totalProjects} icon={FolderKanban} href="/admin/projects" color="#E1D7A8" footer="Manage →" />
-        <KpiTile label="Open Issues" value={openIssues} icon={AlertTriangle} href="/admin/issues" color="#EC68D8" footer="Manage →" />
-        <KpiTile label="Low/Out of Stock" value={lowStock + outOfStock} icon={Package} href="/admin/inventory" color="#FFB13F" footer="Manage →" />
-        <KpiTile label="Announcements" value="Manage" icon={Bell} href="/admin/announcements" color="#514AF1" textColor="light" footer="Manage →" />
+        <KpiTile label="Total Users"      value={totalUsers}              icon={Users}         href="/admin/users"         color="#E0EF4A" footer="Manage →" />
+        <KpiTile label="Total Bookings"   value={totalBookings}           icon={Calendar}      href="/admin/bookings"      color="#FFF4BE" footer="Manage →" />
+        <KpiTile label="Total Projects"   value={totalProjects}           icon={FolderKanban}  href="/admin/projects"      color="#E1D7A8" footer="Manage →" />
+        <KpiTile label="Open Issues"      value={openIssues}              icon={AlertTriangle} href="/admin/issues"        color="#EC68D8" footer="Manage →" />
+        <KpiTile label="Low/Out of Stock" value={lowStock + outOfStock}   icon={Package}       href="/admin/inventory"     color="#FFB13F" footer="Manage →" />
+        <KpiTile label="Equipment"        value={totalEquipment}          icon={Wrench}        href="/admin/equipment"     color="#514AF1" textColor="light" footer="Manage →" />
+        <KpiTile label="Announcements"    value="Manage"                  icon={Bell}          href="/admin/announcements" color="#A9957A" footer="Manage →" />
       </div>
 
+      {/* ── Checkout + Seed panels ────────────────────────────────────────── */}
       <div className="mb-6 grid min-w-0 gap-4 xl:grid-cols-2 sm:gap-5">
         <DataPanel title="Tool Checkout Status">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
@@ -137,15 +140,17 @@ export default function AdminDashboard() {
         </DataPanel>
       </div>
 
+      {/* ── Quick Actions ─────────────────────────────────────────────────── */}
       <DataPanel title="Quick Actions">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
           {[
-            { label: 'Review Bookings', href: '/admin/bookings', bg: '#FFB13F' },
-            { label: 'Review Projects', href: '/admin/projects', bg: '#E0EF4A' },
-            { label: 'Manage Users', href: '/admin/users', bg: '#514AF1', fg: '#fff' },
-            { label: 'Resolve Issues', href: '/admin/issues', bg: '#EC68D8' },
-            { label: 'Checkout History', href: '/checkout/history', bg: '#191919', fg: '#fff' },
-            { label: 'Reports', href: '/reports', bg: '#FFF4BE' },
+            { label: 'Review Bookings',  href: '/admin/bookings',   bg: '#FFB13F' },
+            { label: 'Review Projects',  href: '/admin/projects',   bg: '#E0EF4A' },
+            { label: 'Manage Users',     href: '/admin/users',      bg: '#514AF1', fg: '#fff' },
+            { label: 'Resolve Issues',   href: '/admin/issues',     bg: '#EC68D8' },
+            { label: 'Manage Equipment', href: '/admin/equipment',  bg: '#191919', fg: '#fff' },
+            { label: 'Checkout History', href: '/checkout/history', bg: '#A9957A' },
+            { label: 'Reports',          href: '/reports',          bg: '#FFF4BE' },
           ].map(a => (
             <Link
               key={a.href}

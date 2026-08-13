@@ -39,6 +39,7 @@ const AdminProjectsPage = React.lazy(() => import('@/features/admin/AdminProject
 const AdminInventoryPage = React.lazy(() => import('@/features/admin/AdminInventoryPage'))
 const AdminIssuesPage = React.lazy(() => import('@/features/admin/AdminIssuesPage'))
 const AdminAnnouncementsPage = React.lazy(() => import('@/features/admin/AdminAnnouncementsPage'))
+const AdminEquipmentPage     = React.lazy(() => import('@/features/admin/AdminEquipmentPage'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth()
@@ -137,6 +138,7 @@ export default function AppRoutes() {
           <Route path="/admin/inventory" element={<AdminRoute><AdminInventoryPage /></AdminRoute>} />
           <Route path="/admin/issues" element={<AdminRoute><AdminIssuesPage /></AdminRoute>} />
           <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncementsPage /></AdminRoute>} />
+          <Route path="/admin/equipment"     element={<AdminRoute><AdminEquipmentPage     /></AdminRoute>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
