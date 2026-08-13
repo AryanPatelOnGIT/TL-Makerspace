@@ -88,9 +88,32 @@ export default function AdminDashboard() {
         <KpiTile label="Total Projects"   value={totalProjects}           icon={FolderKanban}  href="/admin/projects"      color="#E1D7A8" footer="Manage →" />
         <KpiTile label="Open Issues"      value={openIssues}              icon={AlertTriangle} href="/admin/issues"        color="#EC68D8" footer="Manage →" />
         <KpiTile label="Low/Out of Stock" value={lowStock + outOfStock}   icon={Package}       href="/admin/inventory"     color="#FFB13F" footer="Manage →" />
-        <KpiTile label="Equipment"        value={totalEquipment}          icon={Wrench}        href="/admin/equipment"     color="#514AF1" textColor="light" footer="Manage →" />
         <KpiTile label="Announcements"    value="Manage"                  icon={Bell}          href="/admin/announcements" color="#A9957A" footer="Manage →" />
       </div>
+
+      {/* ── Quick Actions (pinned above detail panels) ───────────────────── */}
+      <DataPanel title="Quick Actions" className="mb-6">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
+          {[
+            { label: 'Review Bookings',  href: '/admin/bookings',   bg: '#FFB13F' },
+            { label: 'Review Projects',  href: '/admin/projects',   bg: '#E0EF4A' },
+            { label: 'Manage Users',     href: '/admin/users',      bg: '#514AF1', fg: '#fff' },
+            { label: 'Resolve Issues',   href: '/admin/issues',     bg: '#EC68D8' },
+            { label: 'Manage Equipment', href: '/admin/equipment',  bg: '#191919', fg: '#fff' },
+            { label: 'Checkout History', href: '/checkout/history', bg: '#A9957A' },
+            { label: 'Reports',          href: '/reports',          bg: '#FFF4BE' },
+          ].map(a => (
+            <Link
+              key={a.href}
+              to={a.href}
+              className="rounded-[16px] px-4 py-4 text-sm font-bold text-center transition-all hover:brightness-110 active:scale-[0.98] border-2 border-white/10"
+              style={{ backgroundColor: a.bg, color: a.fg ?? '#000' }}
+            >
+              {a.label}
+            </Link>
+          ))}
+        </div>
+      </DataPanel>
 
       {/* ── Checkout + Seed panels ────────────────────────────────────────── */}
       <div className="mb-6 grid min-w-0 gap-4 xl:grid-cols-2 sm:gap-5">
@@ -113,56 +136,42 @@ export default function AdminDashboard() {
         </DataPanel>
 
         <DataPanel title="Database Setup">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
              <Database size={18} className="text-white/60" />
              <p className="text-sm font-medium text-white/60">
                Equipment database has <strong className="text-white">{totalEquipment}</strong> items.
               {totalEquipment === 0 && ' Seed the full equipment list to get started.'}
             </p>
           </div>
-          <button
-            onClick={() => setSeedDialogOpen(true)}
-            disabled={isSeeding || seeded}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide transition-all ${
-              seeded
-                 ? 'bg-lime text-black cursor-not-allowed'
-                : 'tl-pill-button'
-            }`}
-          >
-            {seeded ? (
-              <><CheckCircle2 size={15} /> Seeded!</>
-            ) : isSeeding ? (
-              <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> Seeding…</>
-            ) : (
-              <><Database size={15} /> Seed {EQUIPMENT_SEED.length} Items</>
-            )}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setSeedDialogOpen(true)}
+              disabled={isSeeding || seeded}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide transition-all ${
+                seeded
+                   ? 'bg-lime text-black cursor-not-allowed'
+                  : 'tl-pill-button'
+              }`}
+            >
+              {seeded ? (
+                <><CheckCircle2 size={15} /> Seeded!</>
+              ) : isSeeding ? (
+                <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> Seeding…</>
+              ) : (
+                <><Database size={15} /> Seed {EQUIPMENT_SEED.length} Items</>
+              )}
+            </button>
+            <Link
+              to="/admin/equipment"
+              className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wide border-2 border-white/15 bg-white/5 text-white transition-all hover:border-white/30 hover:bg-white/10"
+            >
+              <Wrench size={15} /> Manage Equipment
+            </Link>
+          </div>
         </DataPanel>
       </div>
 
-      {/* ── Quick Actions ─────────────────────────────────────────────────── */}
-      <DataPanel title="Quick Actions">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
-          {[
-            { label: 'Review Bookings',  href: '/admin/bookings',   bg: '#FFB13F' },
-            { label: 'Review Projects',  href: '/admin/projects',   bg: '#E0EF4A' },
-            { label: 'Manage Users',     href: '/admin/users',      bg: '#514AF1', fg: '#fff' },
-            { label: 'Resolve Issues',   href: '/admin/issues',     bg: '#EC68D8' },
-            { label: 'Manage Equipment', href: '/admin/equipment',  bg: '#191919', fg: '#fff' },
-            { label: 'Checkout History', href: '/checkout/history', bg: '#A9957A' },
-            { label: 'Reports',          href: '/reports',          bg: '#FFF4BE' },
-          ].map(a => (
-            <Link
-              key={a.href}
-              to={a.href}
-              className="rounded-[16px] px-4 py-4 text-sm font-bold text-center transition-all hover:brightness-110 active:scale-[0.98] border-2 border-white/10"
-              style={{ backgroundColor: a.bg, color: a.fg ?? '#000' }}
-            >
-              {a.label}
-            </Link>
-          ))}
-        </div>
-      </DataPanel>
+
 
       <ConfirmDialog
         open={seedDialogOpen}
