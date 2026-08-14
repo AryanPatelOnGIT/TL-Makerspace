@@ -117,7 +117,38 @@ erDiagram
 - **Tailwind & Radix UI**: The UI is built with a utility-first CSS framework (Tailwind) and accessible primitives (Radix UI) for dialogs, combined with custom components modeled on shadcn/ui patterns.
 - **Form Handling**: React Hook Form + Zod provide typed, validated form handling. A centralized `typedZodResolver` wrapper in `src/lib/form.ts` normalizes Zod v4 compatibility across all form pages.
 - **Security Headers**: HTTP security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) are enforced at the Firebase Hosting level via `firebase.json`.
-- **Server-Side Rate Limiting**: Feedback submissions are rate-limited both client-side (via localStorage) and server-side (via Firestore security rules enforcing deterministic document IDs keyed by user + time window).
+- **Server-Side Rate Limiting**: Feedback submissions are rate-limited server-side via Firestore security rules enforcing deterministic document IDs keyed by `userId + time window` (server clock), in addition to a client-side localStorage cooldown.
+
+## Security Model
+
+Authorization is enforced **server-side** by `firestore.rules` and `storage.rules`; the client only mirrors those decisions for UX. See [docs/roles_and_permissions.md](docs/roles_and_permissions.md) and [docs/auth-architecture.md](docs/auth-architecture.md) for details.
+
+### Roles
+
+- `isAdmin()` = `super_admin`; `isStaff()` = `super_admin | faculty | lab_assistant`.
+- Both helpers require an **active** account (`users/{uid}.isActive != false`). When an admin deactivates a user, that account immediately loses self-service and elevated access server-side (see "Known client-side-only enforcement" below for the residual catalog reads).
+- Every elevated-role write (`equipment`, `inventory`, `inventoryTransactions`, `maintenance`, `workshops`, `announcements`, `auditLogs`, `settings`) is staff/admin-only.
+
+### Enforcement highlights
+
+- **Users**: self-create with `role = 'student'` only; owners update their own non-sensitive fields; `role`/`isActive`/`email` changes require `super_admin`. Client-side, profile writes strip `uid`/`email`/`role`/`isActive` from any caller-supplied data.
+- **Projects**: readable only by the owner and staff (no cross-user PII leak). Users create `pending` projects and may edit their own non-`status` fields; status changes are admin-only.
+- **Bookings**: active users only; must reference a **confirmed Tier-1 bookable** machine that is `available`/`reserved`, with a valid `HH:MM` window and a strict field allowlist.
+- **Tool checkouts**: strict schema — `action = 'checking_out'`, valid enums, `isOverdue = false`; owners may only perform a return (or flip the overdue flag), never rewrite the tool/project details.
+- **Issues**: new issues start `open` with valid `type`/`severity`; resolution/status fields are staff-only.
+- **Audit logs**: staff-only writes (immutable); read by admins.
+- **Feedback**: deterministic `userId_windowId` document IDs enforce 1-per-5-minute submissions (server clock).
+- **Storage**: equipment images are readable by any authenticated user but writable/deletable by staff only.
+
+### Known client-side-only enforcement (require Cloud Functions)
+
+These business rules are enforced only in the UI because security rules cannot run queries/transactions, and this repo has no backend/Cloud Functions layer yet:
+
+- Booking time-slot **overlap detection** and the "booking must reference an active project" requirement (`checkBookingConflict`, `userHasActiveProject`).
+- Tool checkout `isOverdue` computation (a daily server sweep is planned as "Phase 9").
+- The 200-word feedback limit (the server enforces a 2000-character cap instead).
+- Server-populated display identity (`userName`/`userEmail`) — currently client-supplied; only `userId` is rule-enforced.
+- Sequential project IDs (`generateProjectId` uses `getCountFromServer() + 1`, which can race under concurrency).
 
 ## Utilities (`src/lib/utils.ts`)
 
