@@ -21,10 +21,13 @@ self.addEventListener('fetch', (event) => {
   if (request.destination === 'document') {
     event.respondWith(
       fetch(request).then((response) => {
-        const clone = response.clone()
-        event.waitUntil(
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-        )
+        // Only cache successful responses — never cache 4xx/5xx error pages.
+        if (response.ok) {
+          const clone = response.clone()
+          event.waitUntil(
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+          )
+        }
         return response
       }).catch(() => caches.match(request))
     )

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, type ReactNode }
 import type { User } from 'firebase/auth'
 import { type DocumentData, type DocumentSnapshot } from 'firebase/firestore'
 import type { UserProfile, UserRole } from '@/types'
+import { ADMIN_ROLES, STAFF_ROLES } from '@/types'
 import { debugLog } from '@/lib/utils'
 
 interface AuthContextValue {
@@ -116,11 +117,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const rawRole = profile?.role ?? null
   const normalizedRole = rawRole?.toLowerCase().replace(/[^a-z]/g, '') ?? ''
 
-  const adminRoles = ['superadmin', 'admin']
-  const staffRoles = ['superadmin', 'admin', 'faculty', 'labassistant']
+  // Single source of truth: the role constants from src/types (matches firestore.rules).
+  const normalize = (r: string) => r.toLowerCase().replace(/[^a-z]/g, '')
 
-  const isAdmin = adminRoles.includes(normalizedRole)
-  const isStaff = staffRoles.includes(normalizedRole)
+  const isAdmin = ADMIN_ROLES.map(normalize).includes(normalizedRole)
+  const isStaff = STAFF_ROLES.map(normalize).includes(normalizedRole)
 
   return (
     <AuthContext.Provider

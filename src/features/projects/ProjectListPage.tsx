@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { collection, query, orderBy, getDocs } from 'firebase/firestore'
+import { collection, query, orderBy, getDocs, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { useAuth } from '@/contexts/AuthContext'
@@ -14,17 +14,26 @@ import { EntityCard } from '@/components/common/EntityCard'
 
 export default function ProjectListPage() {
   const navigate = useNavigate()
+  const { user, isStaff } = useAuth()
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
 
   const { data: projects = [], isLoading } = useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', isStaff ? 'all' : user?.uid],
     queryFn: async () => {
       const ref = collection(db, COLLECTIONS.PROJECTS)
-      const q = query(ref, orderBy('createdAt', 'desc'))
+      // Non-staff only see their own projects (matches the Firestore read rule).
+      // No server orderBy on the user query to avoid requiring a composite index;
+      // results are sorted client-side below.
+      const q = isStaff
+        ? query(ref, orderBy('createdAt', 'desc'))
+        : query(ref, where('userId', '==', user!.uid))
       const snap = await getDocs(q)
-      return snap.docs.map(d => ({ ...d.data(), _firestoreId: d.id }) as Project & { _firestoreId: string })
+      return snap.docs
+        .map(d => ({ ...d.data(), _firestoreId: d.id }) as Project & { _firestoreId: string })
+        .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))
     },
+    enabled: isStaff || !!user,
     staleTime: 10 * 60 * 1000,
   })
 

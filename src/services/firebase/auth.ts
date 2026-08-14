@@ -73,6 +73,11 @@ export async function createUserProfile(
 ): Promise<UserProfile> {
   const ref = doc(db, 'users', user.uid)
   const now = serverTimestamp()
+  // Strip privilege/identity fields so callers can never override role, active status,
+  // email, or uid — these are always set server-side/from the auth user below.
+  const safeExtraData = Object.fromEntries(
+    Object.entries(extraData).filter(([key]) => !['uid', 'email', 'role', 'isActive'].includes(key))
+  ) as Partial<UserProfile>
   const profile: Omit<UserProfile, 'createdAt' | 'updatedAt'> & {
     createdAt: ReturnType<typeof serverTimestamp>
     updatedAt: ReturnType<typeof serverTimestamp>
@@ -86,7 +91,7 @@ export async function createUserProfile(
     isActive: true,
     createdAt: now,
     updatedAt: now,
-    ...extraData,
+    ...safeExtraData,
   }
   await setDoc(ref, cleanFirestoreData(profile), { merge: true })
   return profile as unknown as UserProfile
@@ -97,5 +102,10 @@ export async function updateUserProfile(
   data: Partial<Omit<UserProfile, 'uid' | 'createdAt'>>
 ): Promise<void> {
   const ref = doc(db, 'users', uid)
-  await setDoc(ref, cleanFirestoreData({ ...data, updatedAt: serverTimestamp() }), { merge: true })
+  // Defence-in-depth: never let a self-update change role, active status, or email
+  // (the Firestore rules also block these, but we strip them here too).
+  const safeData = Object.fromEntries(
+    Object.entries(data).filter(([key]) => !['email', 'role', 'isActive'].includes(key))
+  ) as Partial<Omit<UserProfile, 'uid' | 'createdAt'>>
+  await setDoc(ref, cleanFirestoreData({ ...safeData, updatedAt: serverTimestamp() }), { merge: true })
 }

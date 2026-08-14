@@ -104,7 +104,7 @@ export default function ProjectDetailPage() {
           <DetailRow icon={Users} label="Faculty mentor" value={project.facultyMentor} />
           <DetailRow icon={Calendar} label="Start date" value={project.startDate} />
           <DetailRow icon={Clock} label="End date" value={project.endDate} />
-          <DetailRow icon={Link2} label="Resource link" value={project.resourceLink} href={project.resourceLink} />
+          <DetailRow icon={Link2} label="Resource link" value={project.resourceLink} href={project.resourceLink && /^https?:\/\//i.test(project.resourceLink) ? project.resourceLink : undefined} />
         </div>
 
         {project.rejectionReason && (

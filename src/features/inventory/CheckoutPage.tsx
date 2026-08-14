@@ -26,7 +26,7 @@ type FormData = z.infer<typeof schema>
 
 export default function CheckoutPage() {
   const navigate = useNavigate()
-  const { user, profile } = useAuth()
+  const { user, profile, isStaff } = useAuth()
   const qc = useQueryClient()
 
   const { data: items = [] } = useQuery({
@@ -48,6 +48,17 @@ export default function CheckoutPage() {
   const selectedItemId = watch('itemId')
   const transactionType = watch('type')
   const selectedItem = items.find(i => i.id === selectedItemId)
+
+  // Inventory stock movements are staff-only (matches the Firestore rules).
+  if (!isStaff) {
+    return (
+      <div className="mx-auto max-w-2xl py-16 text-center">
+        <Package size={32} className="mx-auto mb-4 text-muted-foreground" />
+        <h1 className="text-2xl font-display font-bold">Stock Checkout</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Staff access only.</p>
+      </div>
+    )
+  }
 
   const onSubmit = async (data: FormData) => {
     if (!user || !profile) { toast.error('Please sign in'); return }

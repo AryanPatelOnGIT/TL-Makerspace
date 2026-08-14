@@ -23,7 +23,7 @@ const NAV_LINKS = [
 ]
 
 export default function TopBar() {
-  const { profile, user, isStaff } = useAuth()
+  const { profile, user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -72,7 +72,7 @@ export default function TopBar() {
             </div>
             <span
               className="font-bold text-sm tracking-tight text-white hidden sm:block"
-              style={{ fontFamily: 'PP Mori, Arial, sans-serif' }}
+              style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
             >
               Tinkerers' Lab
             </span>
@@ -94,7 +94,7 @@ export default function TopBar() {
                 {link.name}
               </button>
             ))}
-            {isStaff && (
+            {isAdmin && (
               <button
                 onClick={() => navigate('/admin')}
                 className={cn(
@@ -220,7 +220,7 @@ export default function TopBar() {
               {link.name}
             </button>
           ))}
-          {isStaff && (
+          {isAdmin && (
             <button
               onClick={() => { navigate('/admin'); setMenuOpen(false) }}
               className="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-[#98989D] hover:text-white transition-colors"

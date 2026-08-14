@@ -1,13 +1,12 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, connectAuthEmulator } from 'firebase/auth'
 import {
-  getFirestore,
   connectFirestoreEmulator,
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
+import { getStorage, connectStorageEmulator } from 'firebase/storage'
 
 const rawApiKey = import.meta.env.VITE_FIREBASE_API_KEY ||
   (import.meta.env.VITE_FIREBASE_API_KEY_B64
@@ -35,10 +34,20 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || (isEmulatorMode ? 'G-0000000000' : ''),
 }
 
-export const isFirebaseConfigured = Boolean(
-  (import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY_B64) &&
-  (!isEmulatorMode ? (import.meta.env.VITE_FIREBASE_PROJECT_ID && import.meta.env.VITE_FIREBASE_APP_ID) : true)
-)
+// Fail fast with a clear message instead of initialising a half-configured app that
+// breaks later on the first auth/firestore call. `main.tsx` renders these messages.
+if (!isEmulatorMode && !rawApiKey) {
+  throw new Error(
+    'Firebase API key is not configured. Set VITE_FIREBASE_API_KEY or VITE_FIREBASE_API_KEY_B64, ' +
+    'or enable emulator mode with VITE_USE_EMULATORS=true.'
+  )
+}
+if (!isEmulatorMode && (!import.meta.env.VITE_FIREBASE_PROJECT_ID || !import.meta.env.VITE_FIREBASE_APP_ID)) {
+  throw new Error(
+    'Firebase project is not configured. Set VITE_FIREBASE_PROJECT_ID and VITE_FIREBASE_APP_ID, ' +
+    'or enable emulator mode with VITE_USE_EMULATORS=true.'
+  )
+}
 
 // Initialize Firebase app
 export const app = initializeApp(firebaseConfig)
@@ -54,11 +63,12 @@ export const db = initializeFirestore(app, {
   }),
 })
 
+// Firebase Storage (images, manuals, safety docs)
+export const storage = getStorage(app)
+
 // Connect to emulators in development if needed
 if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS === 'true') {
   connectAuthEmulator(auth, 'http://localhost:9099')
   connectFirestoreEmulator(db, 'localhost', 8080)
+  connectStorageEmulator(storage, 'localhost', 9199)
 }
-
-// Firebase Storage (images, manuals, safety docs)
-export const storage = getStorage(app)

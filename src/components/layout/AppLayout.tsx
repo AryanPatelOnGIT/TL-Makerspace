@@ -14,7 +14,7 @@ const NAV_LINKS = [
 ]
 
 export default function AppLayout() {
-  const { profile, user, isStaff } = useAuth()
+  const { profile, user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -96,7 +96,7 @@ export default function AppLayout() {
                 </button>
               )
             })}
-            {isStaff && (
+            {isAdmin && (
               <button
                 type="button"
                 onClick={() => navigate('/admin')}
@@ -182,7 +182,7 @@ export default function AppLayout() {
             </button>
           )
         })}
-        {isStaff && (
+        {isAdmin && (
           <button
             type="button"
             onClick={() => navigate('/admin')}

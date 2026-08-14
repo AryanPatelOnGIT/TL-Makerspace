@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from './firestore'
-import { todayStr } from '@/lib/utils'
+import { todayStr, cleanFirestoreData } from '@/lib/utils'
 import type { ToolCheckout, ToolCondition } from '@/types'
 
 // ============================================================
@@ -31,13 +31,13 @@ export async function createToolCheckout(
   data: Omit<ToolCheckout, 'id' | 'createdAt' | 'updatedAt' | 'isOverdue' | 'returnedAt' | 'conditionAtReturn'>
 ): Promise<string> {
   const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
-  const docRef = await addDoc(ref, {
+  const docRef = await addDoc(ref, cleanFirestoreData({
     ...data,
     action: 'checking_out',
     isOverdue: false,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  })
+  }))
   return docRef.id
 }
 

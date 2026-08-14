@@ -36,7 +36,7 @@ const schema = z.object({
   contact:  z.string().min(5, 'Contact number or email required'),
   startDate: z.string().min(1, 'Start date required'),
   endDate:   z.string().optional(),
-  resourceLink: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  resourceLink: z.string().refine(v => v === '' || /^https?:\/\//i.test(v), 'Must be a valid http(s) URL').optional().or(z.literal('')),
   expectedEquipmentNeeds: z.array(z.string()).default([]),
   equipmentNeedsOther: z.string().optional(),
   safetyAgreementAccepted: z.boolean().refine(v => v === true, 'You must accept the safety agreement'),
