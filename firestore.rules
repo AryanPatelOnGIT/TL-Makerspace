@@ -271,7 +271,7 @@ service cloud.firestore {
         // same window fails automatically (create on an existing document is denied).
         // NOTE: the document ID is client-predictable; replace with a Cloud Function
         // or server-enforced flow if stricter rate limiting is required.
-        && request.resource.id == request.auth.uid + '_' + string(math.floor(request.time.toMillis() / 300000));
+        && feedbackId == request.auth.uid + '_' + string(math.floor(request.time.toMillis() / 300000));
       // No one can edit or delete feedback
       allow update, delete: if false;
     }

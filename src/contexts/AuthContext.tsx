@@ -48,10 +48,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false
 
     const init = async () => {
-      const [{ auth, db }, { onAuthStateChanged }, { getRedirectResult }, { doc, onSnapshot }] =
+      const [{ auth, db }, { onAuthStateChanged, getRedirectResult }, { doc, onSnapshot }] =
         await Promise.all([
           import('@/lib/firebase'),
-          import('firebase/auth'),
           import('firebase/auth'),
           import('firebase/firestore'),
         ])
