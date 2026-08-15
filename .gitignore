@@ -23,6 +23,10 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 
+# Firebase service account keys (never commit)
+*-service-account*.json
+serviceAccount*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -41,3 +45,4 @@ UI
 .env.local.backup
 .antigravity/
 .docs
+.vercel

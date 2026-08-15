@@ -4,9 +4,14 @@
 
 ```mermaid
 flowchart TD
-    Client["Vite + React SPA"] -->|Auth State| FirebaseAuth["Firebase Authentication"]
+    Client["Vite + React SPA (Firebase Hosting)"] -->|Auth State| FirebaseAuth["Firebase Authentication"]
     Client -->|CRUD Operations| FirestoreDB[("Firestore Database")]
     Client -->|Security Headers| FirebaseHosting["Firebase Hosting"]
+    Client -->|Privileged ops, feedback| VercelAPI["Vercel Backend API (Express + Firebase Admin)"]
+    
+    subgraph "Backend (Vercel)"
+        VercelAPI -->|Admin SDK| FirestoreDB
+    end
     
     subgraph "Frontend Services"
         Contexts["React Contexts (Auth)"]
@@ -41,9 +46,20 @@ flowchart TD
 - **`ConfirmDialog`** (`src/components/common/ConfirmDialog.tsx`): Reusable Radix UI dialog for destructive or default confirmation prompts. Replaces `window.confirm()` calls across the app with a consistent, accessible modal.
 
 ### Firebase Services
-- **Responsibility**: Handles backend infrastructure including user authentication and NoSQL data storage.
+- **Responsibility**: Provides Firebase client SDK access for authentication, Firestore, and Storage.
 - **Location**: Configured in `src/lib/firebase.ts` and managed via `src/services/firebase/`.
 - **Key dependencies**: `firebase`.
+
+### Backend API (Vercel)
+- **Responsibility**: Serves server-side operations that must be enforced outside the client — privileged writes, rate limiting, and administrative sweeps. Hosted as an Express serverless function on Vercel using the Firebase Admin SDK.
+- **Location**: `backend/` (`backend/index.ts`, `backend/package.json`, `backend/.env.example`).
+- **Key dependencies**: `express`, `firebase-admin`, `cors`.
+- **Endpoints**:
+  - `GET /api/health` — liveness check.
+  - `POST /api/feedback` — server-enforced feedback submission (1 per user per 5-min window, 2000-char cap).
+  - `POST /api/overdue-sweep` — staff-only daily sweep marking overdue tool checkouts.
+- **Auth**: every protected endpoint verifies the caller's Firebase ID token (`Authorization: Bearer <token>`) and checks their `users/{uid}.role`.
+- **Environment**: `FIREBASE_SERVICE_ACCOUNT` (Admin SDK JSON) and `CORS_ORIGINS` (comma-separated allowed browser origins).
 
 ## Data Model
 
@@ -117,7 +133,8 @@ erDiagram
 - **Tailwind & Radix UI**: The UI is built with a utility-first CSS framework (Tailwind) and accessible primitives (Radix UI) for dialogs, combined with custom components modeled on shadcn/ui patterns.
 - **Form Handling**: React Hook Form + Zod provide typed, validated form handling. A centralized `typedZodResolver` wrapper in `src/lib/form.ts` normalizes Zod v4 compatibility across all form pages.
 - **Security Headers**: HTTP security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) are enforced at the Firebase Hosting level via `firebase.json`.
-- **Server-Side Rate Limiting**: Feedback submissions are rate-limited server-side via Firestore security rules enforcing deterministic document IDs keyed by `userId + time window` (server clock), in addition to a client-side localStorage cooldown.
+- **Server-Side Rate Limiting**: Feedback submissions are rate-limited server-side — both by Firestore security rules (deterministic `userId_windowId` document IDs) and by the Vercel backend API, which enforces 1-per-5-minute submissions against the server clock and rejects duplicates with `429`.
+- **Split Hosting**: The frontend is deployed to **Firebase Hosting** (`firebase deploy --only hosting`); the backend API is deployed to **Vercel** from the `backend/` directory (`vercel --prod`). The frontend reaches the API through `VITE_API_URL` (`src/lib/api.ts`).
 
 ## Security Model
 
@@ -140,15 +157,18 @@ Authorization is enforced **server-side** by `firestore.rules` and `storage.rule
 - **Feedback**: deterministic `userId_windowId` document IDs enforce 1-per-5-minute submissions (server clock).
 - **Storage**: equipment images are readable by any authenticated user but writable/deletable by staff only.
 
-### Known client-side-only enforcement (require Cloud Functions)
+### Client-side-only enforcement (require backend/Cloud Functions)
 
-These business rules are enforced only in the UI because security rules cannot run queries/transactions, and this repo has no backend/Cloud Functions layer yet:
+These business rules are enforced only in the UI because security rules cannot run queries/transactions. The Vercel backend API covers some of these today; the remainder is planned for a future phase:
 
-- Booking time-slot **overlap detection** and the "booking must reference an active project" requirement (`checkBookingConflict`, `userHasActiveProject`).
-- Tool checkout `isOverdue` computation (a daily server sweep is planned as "Phase 9").
-- The 200-word feedback limit (the server enforces a 2000-character cap instead).
-- Server-populated display identity (`userName`/`userEmail`) — currently client-supplied; only `userId` is rule-enforced.
-- Sequential project IDs (`generateProjectId` uses `getCountFromServer() + 1`, which can race under concurrency).
+- **Enforced server-side by the Vercel API**:
+  - Tool checkout `isOverdue` computation — `POST /api/overdue-sweep` (staff-only daily sweep).
+  - Feedback rate limiting and the 2000-character cap — `POST /api/feedback`.
+- **Still client-side only**:
+  - Booking time-slot **overlap detection** and the "booking must reference an active project" requirement (`checkBookingConflict`, `userHasActiveProject`).
+  - The 200-word UI feedback limit (the server enforces a 2000-character cap instead).
+  - Server-populated display identity (`userName`/`userEmail`) — currently client-supplied; only `userId` is rule-enforced.
+  - Sequential project IDs (`generateProjectId` uses `getCountFromServer() + 1`, which can race under concurrency).
 
 ## Utilities (`src/lib/utils.ts`)
 
@@ -162,9 +182,10 @@ These business rules are enforced only in the UI because security rules cannot r
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Frontend | React 19 (Vite) | Main SPA framework |
+| Frontend | React 19 (Vite) | Main SPA framework, hosted on Firebase Hosting |
 | Styling | Tailwind CSS | Utility-first styling |
-| Backend | Firebase | Auth and Firestore |
+| Backend API | Express (Vercel) | Serverless API + Firebase Admin SDK |
+| Backend Data | Firebase | Auth, Firestore, Storage |
 | State/Cache | TanStack Query | Remote data fetching and caching |
 | Routing | React Router | Client-side routing |
 | Form(s) | React Hook Form + Zod | Typed, validated forms |
