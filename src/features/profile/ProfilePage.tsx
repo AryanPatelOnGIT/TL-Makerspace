@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { updateUserProfile, signOut } from '@/services/firebase/auth'
-import { submitFeedback } from '@/services/api/feedback'
+import { submitFeedbackCallable } from '@/services/firebase/functions'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { UserType } from '@/types'
@@ -66,7 +66,7 @@ function Field({
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { user, profile, refetchProfile, isStaff, isAdmin } = useAuth()
+  const { user, profile, refetchProfile, isAdmin } = useAuth()
 
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -212,7 +212,9 @@ export default function ProfilePage() {
     setFeedbackSubmitting(true)
 
     try {
-      await submitFeedback(feedbackText.trim())
+      // Server-enforced submission (Cloud Function) — 5-min rate limit is
+      // stamped server-side on feedbackWindows/{uid}, not client-predictable.
+      await submitFeedbackCallable({ message: feedbackText.trim() })
       localStorage.setItem(feedbackStorageKey, String(Date.now()))
       setCooldownRemaining(FEEDBACK_WINDOW_MS / 1000)
       setFeedbackText('')
@@ -224,8 +226,8 @@ export default function ProfilePage() {
         setCooldownRemaining(r)
         if (r <= 0 && cooldownRef.current) clearInterval(cooldownRef.current)
       }, 1000)
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Failed to send feedback. Please try again.')
+    } catch {
+      toast.error('Failed to send feedback. Please try again.')
     } finally {
       setFeedbackSubmitting(false)
     }
