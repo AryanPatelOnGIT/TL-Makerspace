@@ -376,12 +376,76 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  @media (max-width: 380px) {
-    .tl-stat-grid { grid-template-columns: minmax(0, 1fr); }
-  }
-
   @media (min-width: 1280px) {
     .tl-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --radius: 16px;
+    --radius-md: 12px;
+    --radius-lg: 14px;
+    --tl-mobile-nav-space: calc(4rem + env(safe-area-inset-bottom));
+  }
+
+  body {
+    font-size: 16px;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    letter-spacing: 0.02em;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .tl-app-content > * {
+    width: 100%;
+  }
+
+  .tl-page-title {
+    font-size: clamp(1.45rem, 8vw, 2rem);
+    line-height: 1;
+  }
+
+  .tl-form-panel,
+  .premium-glass-card,
+  .tl-auth-panel {
+    padding: 14px;
+  }
+
+  .tl-pill-button,
+  .tl-pill-button-secondary,
+  .tl-pill-button-outline {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 16px;
+    letter-spacing: 0.04em;
+  }
+
+  .tl-kpi-tile {
+    min-height: 104px;
+    padding: 14px;
+  }
+
+  .tl-kpi-label {
+    letter-spacing: 0.08em;
+  }
+
+  .tl-kpi-value {
+    font-size: clamp(1.75rem, 12vw, 2.5rem);
   }
 }
 

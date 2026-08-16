@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       />
 
       {/* ── KPI tiles ─────────────────────────────────────────────────────── */}
-      <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-3 sm:gap-4">
+      <div className="mb-4 grid grid-cols-2 gap-2.5 sm:mb-6 sm:grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] sm:gap-4">
         <KpiTile label="Total Users"      value={totalUsers}              icon={Users}         href="/admin/users"         color="#E0EF4A" footer="Manage →" />
         <KpiTile label="Total Bookings"   value={totalBookings}           icon={Calendar}      href="/admin/bookings"      color="#FFF4BE" footer="Manage →" />
         <KpiTile label="Total Projects"   value={totalProjects}           icon={FolderKanban}  href="/admin/projects"      color="#E1D7A8" footer="Manage →" />

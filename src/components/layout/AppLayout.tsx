@@ -37,7 +37,7 @@ export default function AppLayout() {
 
   return (
     <div className="flex min-h-svh flex-col bg-black text-white">
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-hairline bg-black px-4 md:hidden">
+      <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-hairline bg-black px-2.5 md:hidden">
         {location.pathname.startsWith('/admin') && (
           <button
             type="button"
@@ -169,13 +169,13 @@ export default function AppLayout() {
               </button>
             </div>
           </div>
-          <div className="w-full min-w-0 px-4 py-4 md:px-0 md:py-5 xl:py-6">
+          <div className="tl-app-content w-full min-w-0 px-2 py-2.5 md:px-0 md:py-5 xl:py-6">
             <Outlet />
           </div>
         </main>
       </div>
 
-      <nav className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 flex items-center justify-around rounded-full border border-hairline bg-charcoal px-2 py-2.5 md:hidden" aria-label="Mobile navigation">
+      <nav className="fixed inset-x-1.5 bottom-[calc(0.375rem+env(safe-area-inset-bottom))] z-50 flex items-center justify-around rounded-full border border-hairline bg-charcoal px-1.5 py-1.5 md:hidden" aria-label="Mobile navigation">
         {NAV_LINKS.map(link => {
           const active = isActive(link.path)
           return (

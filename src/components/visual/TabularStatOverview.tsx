@@ -33,7 +33,7 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
         className
       )}
     >
-      <div className="tl-stat-grid divide-y divide-hairline xl:divide-x xl:divide-y-0">
+      <div className="tl-stat-grid">
         {items.map(item => {
           const Icon = item.icon
           const accent = ACCENT_STYLES[item.accent] || ACCENT_STYLES.pink
@@ -45,7 +45,7 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
               key={item.id}
               type={item.onClick ? 'button' : undefined}
               onClick={item.onClick}
-              className="group flex min-w-0 flex-col justify-between p-4 text-left transition-colors duration-150 hover:bg-white/[0.04] focus:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-1 ring-offset-near-black xl:p-5"
+              className="group flex min-w-0 flex-col justify-between border-b border-hairline p-3 text-left transition-colors duration-150 odd:border-r hover:bg-white/[0.04] focus:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-1 ring-offset-near-black sm:p-4 xl:border-b-0 xl:border-r xl:p-5 xl:last:border-r-0"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="min-w-0 text-[10px] font-bold uppercase leading-tight tracking-[0.1em] text-white/45 transition-colors group-hover:text-white/75 sm:text-[11px]">
@@ -62,7 +62,7 @@ export function TabularStatOverview({ items, className }: TabularStatOverviewPro
               </div>
 
               <div className="mt-3">
-                <p className="font-data text-2xl font-extrabold leading-none tracking-tight text-white xl:text-3xl">
+                <p className="font-data text-[1.7rem] font-extrabold leading-none tracking-tight text-white xl:text-3xl">
                   {item.value}
                 </p>
                 {item.detail && (

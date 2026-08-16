@@ -11,7 +11,7 @@ interface DataPanelProps {
 
 export function DataPanel({ title, description, children, className, headerAction }: DataPanelProps) {
   return (
-    <div className={cn('flex min-w-0 flex-col rounded-card border border-hairline bg-near-black p-4 text-white shadow-sm sm:p-6', className)}>
+    <div className={cn('flex min-w-0 flex-col rounded-card border border-hairline bg-near-black p-3 text-white shadow-sm sm:p-6', className)}>
       {(title || description || headerAction) && (
         <div className="mb-4 flex min-w-0 flex-col justify-between gap-3 border-b border-hairline pb-3 sm:flex-row sm:items-end">
           <div className="min-w-0">

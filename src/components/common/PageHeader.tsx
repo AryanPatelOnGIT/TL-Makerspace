@@ -30,10 +30,10 @@ export function PageHeader({
   const styles = VARIANT_STYLES[variant] || VARIANT_STYLES.dark
 
   return (
-    <div className={cn('relative mb-5 overflow-hidden rounded-card p-4 shadow-sm sm:p-5 lg:p-6', styles.panel, className)}>
-      <div className="relative z-10 mb-4 flex min-w-0 flex-col justify-between gap-4 border-b border-hairline/60 pb-3 sm:flex-row sm:items-end">
+    <div className={cn('relative mb-3 overflow-hidden rounded-card p-3 shadow-sm sm:mb-5 sm:p-5 lg:p-6', styles.panel, className)}>
+      <div className="relative z-10 mb-3 flex min-w-0 flex-col justify-between gap-3 border-b border-hairline/60 pb-3 sm:mb-4 sm:flex-row sm:items-end sm:gap-4">
         <div className="min-w-0">
-          <h1 className={cn('mb-2 text-[clamp(1.75rem,4vw,2.5rem)] font-extrabold leading-none tracking-tight', styles.title)}>
+          <h1 className={cn('mb-1.5 text-[clamp(1.5rem,8vw,2.5rem)] font-extrabold leading-none tracking-normal sm:mb-2 sm:tracking-tight', styles.title)}>
             {title}
           </h1>
           {description && (
