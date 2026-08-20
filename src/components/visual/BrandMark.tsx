@@ -2,9 +2,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import brandLogo from '@/assets/tinkerer-figjam/tinkerer-lab-board.webp'
 
-export interface BrandMarkProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-  compact?: boolean
-}
+export interface BrandMarkProps extends React.ImgHTMLAttributes<HTMLImageElement> {}
 
 export function BrandMark({ className, alt = 'TINKERERS LAB', ...props }: BrandMarkProps) {
   return (

@@ -5,6 +5,8 @@ import {
   where,
   orderBy,
   getDocs,
+  getCountFromServer,
+  writeBatch,
   serverTimestamp,
   doc,
   updateDoc,
@@ -14,7 +16,6 @@ import { db } from '@/lib/firebase'
 import { COLLECTIONS, SUBCOLLECTIONS } from './firestore'
 import { todayStr } from '@/lib/utils'
 import { createToolCheckoutCallable } from './functions'
-import { logProjectActivity } from './activityLog'
 import type { ToolCheckout, ToolCondition } from '@/types'
 
 // ============================================================
@@ -79,16 +80,30 @@ export async function returnTool(
     updatedAt: serverTimestamp(),
   }
   if (notes) updates.notes = notes
-  await updateDoc(ref, updates)
 
-  await logProjectActivity(projectId, {
+  const summary = `Returned tool${notes ? ` — ${notes}` : ''}`
+
+  const batch = writeBatch(db)
+  batch.update(ref, updates)
+
+  // Deterministic log ID = idempotency key (retries write the same doc).
+  const logRef = doc(
+    db,
+    COLLECTIONS.PROJECTS, projectId,
+    SUBCOLLECTIONS.PROJECT_ACTIVITY_LOG,
+    `return_${checkoutId}`,
+  )
+  batch.set(logRef, {
     type: 'return',
-    summary: `Returned tool${notes ? ` — ${notes}` : ''}`,
+    summary: summary.length > 280 ? summary.slice(0, 277) + '…' : summary,
     resourceId: checkoutId,
     userId: actor?.uid ?? 'system',
     userName: actor?.name ?? 'User',
     userEmail: actor?.email ?? '',
+    createdAt: serverTimestamp(),
   })
+
+  await batch.commit()
 }
 
 /**
@@ -137,6 +152,34 @@ export async function getAllActiveCheckouts(): Promise<ToolCheckout[]> {
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }) as ToolCheckout)
     .filter((c) => !c.returnedAt)
+}
+
+/**
+ * Count of active (not yet returned) checkouts across all projects.
+ * Uses getCountFromServer — no document payload reads (cheap KPI).
+ */
+export async function getActiveCheckoutCount(): Promise<number> {
+  const q = query(allCheckoutsRef(), where('action', '==', 'checking_out'))
+  const snap = await getCountFromServer(q)
+  return snap.data().count
+}
+
+/**
+ * Count of overdue checkouts (authoritative `isOverdue` flag set by the
+ * scheduled sweep). Uses getCountFromServer — no document payload reads.
+ */
+export async function getOverdueCheckoutCount(): Promise<number> {
+  const q = query(allCheckoutsRef(), where('isOverdue', '==', true))
+  const snap = await getCountFromServer(q)
+  return snap.data().count
+}
+
+/**
+ * Total checkout count (active + returned). Uses getCountFromServer.
+ */
+export async function getTotalCheckoutCount(): Promise<number> {
+  const snap = await getCountFromServer(allCheckoutsRef())
+  return snap.data().count
 }
 
 /**

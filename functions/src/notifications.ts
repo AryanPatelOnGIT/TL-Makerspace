@@ -62,7 +62,9 @@ export const notifyOnBookingUpdate = onDocumentUpdated(
           : `${machine} on ${after.date} ${after.startTime}–${after.endTime} was rejected.`,
         link: '/bookings',
       })
-    } else if (after.status === 'cancelled') {
+    } else if (after.status === 'cancelled' && after.cancelledBy && after.cancelledBy !== after.userId) {
+      // Notify only for staff-initiated cancellations — the owner already knows
+      // when they cancelled it themselves.
       await notifyUser({
         userId,
         type: 'booking_reminder',

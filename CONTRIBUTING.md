@@ -24,14 +24,16 @@ Environment variables are documented in [`docs/firebase/ENVIRONMENT.md`](docs/fi
 
 ## Quality Gates
 
-There is currently **no automated unit/E2E test suite**. Before submitting work, ensure the type-checker and linter pass:
+Before submitting work, ensure the type-checker, linter, and automated tests pass:
 
 ```bash
 npm run lint
 npm run build
+npm test
+npm run test:rules   # Firestore/Storage rule tests in Firebase emulators (requires Java)
 ```
 
-See [`docs/development/TESTING.md`](docs/development/TESTING.md) for the manual QA checklist and emulator workflow.
+See [`docs/development/TESTING.md`](docs/development/TESTING.md) for the full test workflow, the manual QA checklist, and the emulator setup.
 
 ## Submitting a Pull Request
 

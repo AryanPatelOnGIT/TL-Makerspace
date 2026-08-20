@@ -120,7 +120,7 @@ export default function ProjectDetailPage() {
           <DetailRow icon={Users} label="Faculty mentor" value={project.facultyMentor} />
           <DetailRow icon={Calendar} label="Start date" value={project.startDate} />
           <DetailRow icon={Clock} label="End date" value={project.endDate} />
-          <DetailRow icon={Link2} label="Resource link" value={project.resourceLink} href={project.resourceLink && /^https?:\/\//i.test(project.resourceLink) ? project.resourceLink : undefined} />
+          <DetailRow icon={Link2} label="Resource link" value={project.resourceLink} href={project.resourceLink && /^https:\/\//i.test(project.resourceLink) ? project.resourceLink : undefined} />
         </div>
 
         {project.rejectionReason && (
@@ -192,6 +192,7 @@ export default function ProjectDetailPage() {
                     entry.type === 'checkout' && 'bg-indigo',
                     entry.type === 'return' && 'bg-orange',
                     entry.type === 'status_change' && 'bg-pink',
+                    entry.type === 'created' && 'bg-white/40',
                   )}
                 />
                 <div className="flex items-center justify-between gap-3">

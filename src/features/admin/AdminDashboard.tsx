@@ -5,7 +5,7 @@ import { getCountFromServer, collection, collectionGroup, query, where, doc, set
 import { db } from '@/lib/firebase'
 import { toast } from 'sonner'
 import { COLLECTIONS } from '@/services/firebase/firestore'
-import { getAllActiveCheckouts, isCheckoutOverdue } from '@/services/firebase/toolCheckouts'
+import { getActiveCheckoutCount, getOverdueCheckoutCount, getTotalCheckoutCount } from '@/services/firebase/toolCheckouts'
 import { EQUIPMENT_SEED } from '@/../scripts/seedEquipment'
 import { Users, Calendar, Package, FolderKanban, AlertTriangle, Bell, ShieldCheck, Database, CheckCircle2, Wrench } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -36,13 +36,21 @@ export default function AdminDashboard() {
   const { data: outOfStock     = 0 } = useCount(COLLECTIONS.INVENTORY, 'status', 'out_of_stock')
   const { data: totalEquipment = 0 } = useCount(COLLECTIONS.EQUIPMENT)
 
-  const { data: allCheckouts = [] } = useQuery({
-    queryKey: ['admin', 'checkouts', 'all'],
-    queryFn: () => getAllActiveCheckouts(),
+  const { data: activeCheckoutCount = 0 } = useQuery({
+    queryKey: ['admin', 'checkouts', 'active-count'],
+    queryFn: () => getActiveCheckoutCount(),
     staleTime: 2 * 60 * 1000,
   })
-  const activeCheckoutCount = allCheckouts.filter(c => !c.returnedAt).length
-  const overdueCount        = allCheckouts.filter(isCheckoutOverdue).length
+  const { data: overdueCount = 0 } = useQuery({
+    queryKey: ['admin', 'checkouts', 'overdue-count'],
+    queryFn: () => getOverdueCheckoutCount(),
+    staleTime: 2 * 60 * 1000,
+  })
+  const { data: totalCheckoutCount = 0 } = useQuery({
+    queryKey: ['admin', 'checkouts', 'total-count'],
+    queryFn: () => getTotalCheckoutCount(),
+    staleTime: 2 * 60 * 1000,
+  })
 
   const [isSeeding,     setIsSeeding]     = useState(false)
   const [seeded,        setSeeded]        = useState(false)
@@ -130,7 +138,7 @@ export default function AdminDashboard() {
             </div>
             <Link to="/checkout/history" className="tl-kpi-tile group" style={{ backgroundColor: '#514AF1' }}>
                <span className="tl-kpi-label text-white/60">Total</span>
-               <span className="tl-kpi-value text-white">{allCheckouts.length}</span>
+               <span className="tl-kpi-value text-white">{totalCheckoutCount}</span>
                <span className="text-[11px] font-bold uppercase tracking-wider text-white/60 group-hover:text-white/70">View →</span>
             </Link>
           </div>

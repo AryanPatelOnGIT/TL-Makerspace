@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { updateUserProfile, signOut } from '@/services/firebase/auth'
-import { submitFeedbackCallable } from '@/services/firebase/functions'
+import { submitFeedback } from '@/services/api/feedback'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { UserType } from '@/types'
@@ -212,9 +212,9 @@ export default function ProfilePage() {
     setFeedbackSubmitting(true)
 
     try {
-      // Server-enforced submission (Cloud Function) — 5-min rate limit is
-      // stamped server-side on feedbackWindows/{uid}, not client-predictable.
-      await submitFeedbackCallable({ message: feedbackText.trim() })
+      // Server-enforced submission via the Vercel backend — 5-min rate limit is
+      // stamped server-side (per-user window), not client-predictable.
+      await submitFeedback(feedbackText.trim())
       localStorage.setItem(feedbackStorageKey, String(Date.now()))
       setCooldownRemaining(FEEDBACK_WINDOW_MS / 1000)
       setFeedbackText('')
@@ -226,8 +226,8 @@ export default function ProfilePage() {
         setCooldownRemaining(r)
         if (r <= 0 && cooldownRef.current) clearInterval(cooldownRef.current)
       }, 1000)
-    } catch {
-      toast.error('Failed to send feedback. Please try again.')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to send feedback. Please try again.')
     } finally {
       setFeedbackSubmitting(false)
     }

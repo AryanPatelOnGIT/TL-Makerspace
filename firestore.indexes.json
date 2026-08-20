@@ -47,6 +47,15 @@
       "collectionGroup": "bookings",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
+        { "fieldPath": "equipmentId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "bookings",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
         { "fieldPath": "machineId", "order": "ASCENDING" },
         { "fieldPath": "date", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
@@ -88,6 +97,15 @@
       "collectionGroup": "checkouts",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
+        { "fieldPath": "isOverdue", "order": "ASCENDING" },
+        { "fieldPath": "expectedReturnDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "checkouts",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "action", "order": "ASCENDING" },
         { "fieldPath": "isOverdue", "order": "ASCENDING" },
         { "fieldPath": "expectedReturnDate", "order": "ASCENDING" }
       ]

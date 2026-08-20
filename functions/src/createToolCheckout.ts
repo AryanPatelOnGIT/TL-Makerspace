@@ -1,8 +1,12 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { getUserProfile } from './lib/helpers'
+import { TIME_PATTERN } from './lib/validation'
 
-const db = getFirestore()
+// Lazy access — see functions/src/lib/helpers.ts.
+function db() {
+  return getFirestore()
+}
 
 const CHECKOUT_KEYS = [
   'projectId', 'toolCategory', 'toolName', 'quantity', 'locationOfUse',
@@ -11,7 +15,6 @@ const CHECKOUT_KEYS = [
 ] as const
 
 const DATE_PATTERN = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/
-const TIME_PATTERN = /^[0-9]{2}:[0-9]{2}$/
 const TOOL_CATEGORIES = ['Power Tools', 'Hand Tools', 'Measurement Tools', 'Safety Equipment', 'Other']
 const CONDITIONS = ['good', 'fair', 'damaged']
 
@@ -82,7 +85,7 @@ export const createToolCheckout = onCall(
     if (input.expectedReturnTime !== undefined && typeof input.expectedReturnTime !== 'string') {
       throw new HttpsError('invalid-argument', 'Return time must be text.')
     }
-    if (input.expectedReturnTime && (!TIME_PATTERN.test(input.expectedReturnTime) || input.expectedReturnTime > '23:59')) {
+    if (input.expectedReturnTime && !TIME_PATTERN.test(input.expectedReturnTime)) {
       throw new HttpsError('invalid-argument', 'Return time must be HH:MM.')
     }
     if (input.notes !== undefined && typeof input.notes !== 'string') {
@@ -92,7 +95,7 @@ export const createToolCheckout = onCall(
       throw new HttpsError('invalid-argument', 'Invalid checkout condition.')
     }
 
-    const projectRef = db.collection('projects').doc(input.projectId)
+    const projectRef = db().collection('projects').doc(input.projectId)
     const projectSnap = await projectRef.get()
     if (!projectSnap.exists || projectSnap.data()?.userId !== request.auth.uid) {
       throw new HttpsError('permission-denied', 'Checkout requires a project you own.')
@@ -104,7 +107,7 @@ export const createToolCheckout = onCall(
 
     const checkoutRef = projectRef.collection('checkouts').doc()
     const logRef = projectRef.collection('activityLog').doc()
-    await db.runTransaction(async (tx) => {
+    await db().runTransaction(async (tx) => {
       tx.set(checkoutRef, {
         userId: request.auth!.uid,
         userEmail: user.email ?? '',

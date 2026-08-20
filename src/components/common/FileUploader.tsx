@@ -102,23 +102,25 @@ export function FileUploader({
   )
 
   const handleDelete = async (url: string) => {
-    const next = urls.filter((u) => u !== url)
-    setUrls(next)
-    onChange(next)
     try {
       await deleteFile(url)
     } catch {
       toast.error('Failed to delete file from storage.')
+      return
     }
+    const next = urls.filter((u) => u !== url)
+    setUrls(next)
+    onChange(next)
   }
 
   const accept = allowedTypes.join(',')
 
   return (
     <div>
-      <div
+      <button
+        type="button"
         className={cn(
-          'flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-white/20 bg-black/20 px-4 py-6 text-center transition-colors',
+          'flex w-full flex-col items-center justify-center gap-2 rounded-md border border-dashed border-white/20 bg-black/20 px-4 py-6 text-center transition-colors',
           isDragging && 'border-pink bg-pink/10',
           disabled && 'pointer-events-none opacity-50',
         )}
@@ -133,29 +135,31 @@ export function FileUploader({
           void handleFiles(e.dataTransfer.files)
         }}
         onClick={() => inputRef.current?.click()}
+        disabled={disabled}
+        aria-label={label ?? (kind === 'documents' ? 'Upload documents' : 'Upload images')}
       >
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo/25 text-white/70">
           {kind === 'documents' ? <FileText className="h-4 w-4" /> : <ImagePlus className="h-4 w-4" />}
         </span>
-        <p className="text-sm font-semibold text-white/70">
+        <span className="block text-sm font-semibold text-white/70">
           {label ?? (kind === 'documents' ? 'Upload documents' : 'Upload images')}
-        </p>
-        <p className="text-[11px] text-white/40">
+        </span>
+        <span className="block text-[11px] text-white/40">
           {allowedTypes.map((t) => t.split('/')[1]?.toUpperCase()).join(', ')} · max {(maxSize / 1024 / 1024).toFixed(0)} MB · up to {maxFiles}
-        </p>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          multiple
-          className="hidden"
-          disabled={disabled}
-          onChange={(e) => {
-            void handleFiles(e.target.files)
-            e.target.value = ''
-          }}
-        />
-      </div>
+        </span>
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple
+        className="hidden"
+        disabled={disabled}
+        onChange={(e) => {
+          void handleFiles(e.target.files)
+          e.target.value = ''
+        }}
+      />
 
       {uploads.length > 0 && (
         <ul className="mt-3 space-y-2">

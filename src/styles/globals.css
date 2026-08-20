@@ -110,8 +110,8 @@
     font-size: clamp(16px, 1.2vw, 18px);
     font-weight: 700;
     -webkit-text-stroke: 0.5px currentColor;
-    line-height: 1.6;
-    letter-spacing: 0.025em;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -149,8 +149,8 @@
     font-family: 'Comic CAT', 'Outfit', 'Inter', Arial, sans-serif;
     font-weight: 900;
     /* Comic CAT uppercase headings with thick stroke for mobile impact */
-    letter-spacing: 0.05em;
-    line-height: 1.12;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
     text-transform: uppercase;
     -webkit-text-stroke: 0.85px currentColor;
   }
@@ -177,7 +177,7 @@
 
   .font-brand {
     font-weight: 900 !important;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     -webkit-text-stroke: 0.85px currentColor;
   }
@@ -233,8 +233,8 @@
     /* 13px min: WCAG AA on small screens, thick uppercase */
     font-size: 13px;
     font-weight: 900;
-    letter-spacing: 0.12em;
-    line-height: 1.2;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
     text-transform: uppercase;
     -webkit-text-stroke: 0.5px currentColor;
   }
@@ -252,7 +252,7 @@
     /* 16px bold for maximum mobile readability */
     font-size: 16px;
     font-weight: 900;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     -webkit-text-stroke: 0.65px currentColor;
     touch-action: manipulation;
@@ -296,8 +296,8 @@
     font-family: 'Comic CAT', 'Outfit', 'Inter', Arial, sans-serif;
     font-size: clamp(3.25rem, 8vw, 5.5rem);
     font-weight: 900;
-    letter-spacing: 0.06em;
-    line-height: 1.0;
+    letter-spacing: 0.03em;
+    line-height: 1.05;
     text-transform: uppercase;
     -webkit-text-stroke: 1.2px currentColor;
   }
@@ -305,7 +305,7 @@
     font-family: 'Comic CAT', 'Outfit', 'Inter', Arial, sans-serif;
     font-size: clamp(1.65rem, 4.5vw, 2.5rem);
     font-weight: 900;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     -webkit-text-stroke: 0.9px currentColor;
   }
@@ -358,7 +358,7 @@
     font-size: clamp(13px, 1.7vw, 15px);
     font-weight: 900;
     /* Wide tracking + uppercase = maximum legibility for Comic CAT at small sizes */
-    letter-spacing: 0.15em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     -webkit-text-stroke: 0.6px currentColor;
   }
@@ -391,7 +391,7 @@
 
   body {
     font-size: 16px;
-    line-height: 1.45;
+    line-height: 1.4;
     letter-spacing: 0;
   }
 
@@ -401,7 +401,7 @@
   h4,
   h5,
   h6 {
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
   }
 
   button,
@@ -432,7 +432,7 @@
     width: 100%;
     min-height: 46px;
     padding: 11px 16px;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
   }
 
   .tl-kpi-tile {
@@ -441,7 +441,7 @@
   }
 
   .tl-kpi-label {
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
   }
 
   .tl-kpi-value {

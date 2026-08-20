@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from '@/components/ui/badge'
 
 export default function BookingDetailPage() {
-  const { id } = useParams<{ id: string }>()
+  const { projectId, id } = useParams<{ projectId: string; id: string }>()
   const navigate = useNavigate()
   const { isStaff, user, profile } = useAuth()
   const qc = useQueryClient()
@@ -26,9 +26,9 @@ export default function BookingDetailPage() {
   const [actionLoading, setActionLoading] = React.useState(false)
 
   const { data: booking, isLoading } = useQuery({
-    queryKey: ['bookings', id],
-    queryFn: () => getBookingById(id!),
-    enabled: !!id,
+    queryKey: ['bookings', projectId, id],
+    queryFn: () => getBookingById(projectId!, id!),
+    enabled: !!projectId && !!id,
   })
 
   if (isLoading) return <LoadingSpinner text="Loading booking…" />

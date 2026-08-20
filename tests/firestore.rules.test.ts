@@ -193,11 +193,12 @@ describe('feedback (server-enforced creation)', () => {
 })
 
 describe('activityLog (immutable timeline)', () => {
-  it('the project owner can append an entry', async () => {
+  it('an owner cannot forge a timeline timestamp (createdAt must be server-stamped)', async () => {
     const db = env.authenticatedContext(STUDENT_A).firestore()
-    await assertSucceeds(db.doc('projects/project-of-a/activityLog/e2').set({
+    await assertFails(db.doc('projects/project-of-a/activityLog/e2').set({
       type: 'checkout', summary: 'Checked out Y', userId: 'student-a',
-      userName: 'X', userEmail: 'x@x.com', createdAt: new Date(),
+      userName: 'X', userEmail: 'x@x.com', resourceId: 'c1',
+      createdAt: new Date(), // client-supplied timestamp ≠ request.time
     }))
   })
 

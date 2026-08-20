@@ -2,7 +2,7 @@
   "mcpServers": {
     "test-server": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-everything"]
+      "args": ["--no-install", "mcp-server-everything"]
     }
   }
 }

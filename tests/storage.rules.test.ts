@@ -107,3 +107,25 @@ describe('storage — workshop materials', () => {
     await assertFails(put(storage, 'workshops/w1/slides.pdf', new Uint8Array(100), 'application/pdf'))
   })
 })
+
+describe('storage — deactivated users cannot read resources', () => {
+  it('deactivated users cannot read equipment images', async () => {
+    const storage = env.authenticatedContext(INACTIVE_STAFF).storage()
+    await assertFails(storage.ref('equipment/bambu-x1c/photo.png').getDownloadURL())
+  })
+
+  it('deactivated users cannot read project images', async () => {
+    const storage = env.authenticatedContext(INACTIVE_STAFF).storage()
+    await assertFails(storage.ref(`projects/${PROJECT_ID_DOC}/images/photo.png`).getDownloadURL())
+  })
+
+  it('deactivated users cannot read project documents', async () => {
+    const storage = env.authenticatedContext(INACTIVE_STAFF).storage()
+    await assertFails(storage.ref(`projects/${PROJECT_ID_DOC}/documents/report.pdf`).getDownloadURL())
+  })
+
+  it('deactivated users cannot read workshop materials', async () => {
+    const storage = env.authenticatedContext(INACTIVE_STAFF).storage()
+    await assertFails(storage.ref('workshops/w1/slides.pdf').getDownloadURL())
+  })
+})

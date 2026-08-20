@@ -128,8 +128,7 @@ export default function DashboardPage() {
       <section aria-labelledby="lab-overview-title">
         <div className="mb-3 flex items-end justify-between gap-3 sm:mb-4 sm:gap-4">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/40">Live lab overview</p>
-             <h1 id="lab-overview-title" className="mt-1.5 text-[clamp(1.8rem,9vw,3.5rem)] font-extrabold leading-none tracking-normal text-white sm:mt-2 sm:tracking-[-0.04em] lg:tracking-[-0.05em]">
+            <h1 id="lab-overview-title" className="text-[clamp(1.8rem,9vw,3.5rem)] font-extrabold leading-[1.1] tracking-normal text-white sm:tracking-[-0.04em] lg:tracking-[-0.05em]">
               Your workspace, at a glance.
             </h1>
           </div>

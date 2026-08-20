@@ -74,8 +74,12 @@ async function migrateBookings() {
       continue
     }
 
-    // Create the activity log entry for this historical booking
-    await db.collection(`projects/${projectId}/activityLog`).add({
+    // Create the activity log entry for this historical booking, atomically
+    // with the target write so a crash between the two writes can't leave a
+    // half-migrated document (idempotency is preserved by the targetSnap check
+    // above — a re-run skips already-migrated documents entirely).
+    const batch = db.batch()
+    batch.set(db.collection(`projects/${projectId}/activityLog`).doc(), {
       type: 'booking',
       summary: `Migrated booking: ${data.machineName || data.machineId || 'machine'} (${data.date || ''} ${data.startTime || ''}–${data.endTime || ''})`,
       resourceId: docSnap.id,
@@ -84,8 +88,8 @@ async function migrateBookings() {
       userEmail: data.userEmail || '',
       createdAt: data.createdAt || new Date(),
     })
-
-    await target.set(data)
+    batch.set(target, data)
+    await batch.commit()
     moved++
   }
 
@@ -118,7 +122,8 @@ async function migrateCheckouts() {
       continue
     }
 
-    await db.collection(`projects/${projectId}/activityLog`).add({
+    const batch = db.batch()
+    batch.set(db.collection(`projects/${projectId}/activityLog`).doc(), {
       type: data.action === 'returning' ? 'return' : 'checkout',
       summary: `Migrated checkout: ${data.toolName || 'tool'} (qty: ${data.quantity ?? 1})`,
       resourceId: docSnap.id,
@@ -127,8 +132,8 @@ async function migrateCheckouts() {
       userEmail: data.userEmail || '',
       createdAt: data.createdAt || new Date(),
     })
-
-    await target.set(data)
+    batch.set(target, data)
+    await batch.commit()
     moved++
   }
 
@@ -141,7 +146,22 @@ async function initCounter() {
   const counterSnap = await counterRef.get()
 
   const projectsSnap = await db.collection('projects').get()
-  const nextId = projectsSnap.size + 1
+
+  // Derive the next ID from the highest numeric suffix among existing project
+  // codes (e.g. TL-042 → 42) rather than projectsSnap.size + 1, so deleted or
+  // sparse documents don't produce a duplicate/regressed TL-XXX code.
+  let maxSeq = 0
+  for (const doc of projectsSnap.docs) {
+    const code = doc.data()?.projectCode
+    if (typeof code === 'string') {
+      const match = code.match(/TL-(\d+)$/)
+      if (match) {
+        const n = Number.parseInt(match[1], 10)
+        if (Number.isFinite(n) && n > maxSeq) maxSeq = n
+      }
+    }
+  }
+  const nextId = maxSeq + 1
 
   if (counterSnap.exists) {
     const current = counterSnap.data()?.nextId
@@ -150,7 +170,7 @@ async function initCounter() {
   }
 
   await counterRef.set({ nextId })
-  console.log(`✅ Initialised counters/projects → { nextId: ${nextId} } (projects count = ${projectsSnap.size})`)
+  console.log(`✅ Initialised counters/projects → { nextId: ${nextId} } (highest project code = TL-${String(maxSeq).padStart(3, '0')}, ${projectsSnap.size} projects)`)
 }
 
 async function main() {

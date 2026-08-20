@@ -106,7 +106,8 @@ export default function BookingFormPage() {
     resolver: typedZodResolver(bookingSchema),
     defaultValues: {
       equipmentId: params.get('machine') || '',
-      date: todayStr(),
+      date: params.get('date') || todayStr(),
+      startTime: params.get('startTime') || '',
       safetyAgreementAccepted: false,
     },
   })

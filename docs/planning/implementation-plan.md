@@ -123,12 +123,18 @@ match /projects/{projectId}/activityLog/{logId} {
 }
 ```
 
-Also add a `counters` collection rule:
+Also add a `counters` collection rule. **Superseded** — the example below is the
+original draft; the actual deployed rule denies *all* direct client writes
+because the `createProject` Cloud Function increments the counter with the Admin
+SDK (which bypasses rules). `runTransaction` does **not** require client write
+permission — it runs server-side in the function.
+
 ```
 match /counters/{counterId} {
   allow read: if isActiveUser();
-  // Write happens inside runTransaction in createProject — rules allow if active
-  allow write: if isActiveUser();
+  // Direct client writes are denied — counters/projects is only advanced by
+  // the createProject Cloud Function, so clients cannot tamper with TL-XXX codes.
+  allow write: if false;
 }
 ```
 

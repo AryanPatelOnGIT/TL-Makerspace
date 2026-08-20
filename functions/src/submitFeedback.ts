@@ -2,7 +2,10 @@ import { onCall } from 'firebase-functions/v2/https'
 import { HttpsError } from 'firebase-functions/v2/https'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 
-const db = getFirestore()
+// Lazy access — see functions/src/lib/helpers.ts.
+function db() {
+  return getFirestore()
+}
 
 // ============================================================
 // submitFeedback — SERVER-ENFORCED feedback rate limiting
@@ -29,10 +32,10 @@ export const submitFeedback = onCall(
     }
 
     const uid = auth.uid
-    const windowRef = db.collection('feedbackWindows').doc(uid)
+    const windowRef = db().collection('feedbackWindows').doc(uid)
     const now = Date.now()
 
-    const feedbackId = await db.runTransaction(async (tx) => {
+    const feedbackId = await db().runTransaction(async (tx) => {
       const windowSnap = await tx.get(windowRef)
       const last = windowSnap.exists ? (windowSnap.data()?.lastSubmittedAt as number | undefined) : undefined
       if (last != null && now - last < WINDOW_MS) {
@@ -40,7 +43,7 @@ export const submitFeedback = onCall(
         throw new HttpsError('resource-exhausted', `Please wait ${waitSec}s before sending more feedback.`)
       }
 
-      const ref = db.collection('feedback').doc()
+      const ref = db().collection('feedback').doc()
       tx.set(ref, {
         userId: uid,
         message: message.trim(),

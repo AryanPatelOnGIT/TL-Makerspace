@@ -2,8 +2,12 @@ import { onCall } from 'firebase-functions/v2/https'
 import { HttpsError } from 'firebase-functions/v2/https'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { getUserProfile } from './lib/helpers'
+import { TIME_PATTERN } from './lib/validation'
 
-const db = getFirestore()
+// Lazy access — see functions/src/lib/helpers.ts.
+function db() {
+  return getFirestore()
+}
 
 // ============================================================
 // createBooking — SERVER-ENFORCED booking creation (Form 2A)
@@ -19,7 +23,6 @@ const BOOKING_KEYS = [
   'cancelledBy', 'createdAt', 'updatedAt',
 ] as const
 
-const TIME_PATTERN = /^[0-9]{2}:[0-9]{2}$/
 const DATE_PATTERN = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/
 
 function isRealDate(value: string): boolean {
@@ -69,9 +72,6 @@ export const createBooking = onCall(
       || !TIME_PATTERN.test(input.startTime) || !TIME_PATTERN.test(input.endTime)) {
       throw new HttpsError('invalid-argument', 'startTime/endTime must be HH:MM.')
     }
-    if (input.startTime > '23:59' || input.endTime > '23:59') {
-      throw new HttpsError('invalid-argument', 'startTime/endTime must be valid times.')
-    }
     if (input.startTime >= input.endTime) {
       throw new HttpsError('invalid-argument', 'endTime must be after startTime.')
     }
@@ -89,7 +89,7 @@ export const createBooking = onCall(
     }
 
     // ── 3. Validate the project belongs to the caller ──────────────
-    const projectRef = db.collection('projects').doc(input.projectId)
+    const projectRef = db().collection('projects').doc(input.projectId)
     const projectSnap = await projectRef.get()
     if (!projectSnap.exists) throw new HttpsError('not-found', 'Project not found.')
     const project = projectSnap.data()!
@@ -102,7 +102,7 @@ export const createBooking = onCall(
     }
 
     // ── 4. Validate the machine is bookable (Tier-1, confirmed) ────
-    const equipmentRef = db.collection('equipment').doc(input.equipmentId)
+    const equipmentRef = db().collection('equipment').doc(input.equipmentId)
     const equipmentSnap = await equipmentRef.get()
     if (!equipmentSnap.exists) throw new HttpsError('not-found', 'Equipment not found.')
     const equipment = equipmentSnap.data()!
@@ -117,16 +117,30 @@ export const createBooking = onCall(
     }
 
     // ── 5. Conflict detection + atomic write (server-side) ─────────
-    const bookingId = db.collection('projects').doc(input.projectId)
+    const bookingId = db().collection('projects').doc(input.projectId)
       .collection('bookings').doc().id
 
-    const conflictRef = db
+    const conflictRef = db()
       .collectionGroup('bookings')
       .where('equipmentId', '==', input.equipmentId)
       .where('date', '==', input.date)
       .where('status', '==', 'approved')
 
-    await db.runTransaction(async (tx) => {
+    // Deterministic per-slot lock: concurrent requests for the same
+    // equipment/date/startTime contend on the same document, so the
+    // transaction is atomic and an existing lock fails the second writer.
+    const lockId = `${input.equipmentId}_${input.date}_${input.startTime}`
+      .replace(/[^A-Za-z0-9_-]/g, '_')
+    const slotLockRef = db().collection('bookingSlots').doc(lockId)
+
+    await db().runTransaction(async (tx) => {
+      // Contend on the deterministic slot lock first — an existing lock
+      // means this exact slot is already booked (or being booked right now).
+      const lockSnap = await tx.get(slotLockRef)
+      if (lockSnap.exists) {
+        throw new HttpsError('aborted', 'This time slot is already booked.')
+      }
+
       // Re-read inside the transaction for isolation.
       const snap = await tx.get(conflictRef)
       for (const doc of snap.docs) {
@@ -139,7 +153,15 @@ export const createBooking = onCall(
         }
       }
 
-      const bookingRef = db
+      tx.set(slotLockRef, {
+        equipmentId: input.equipmentId,
+        date: input.date,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        createdAt: FieldValue.serverTimestamp(),
+      })
+
+      const bookingRef = db()
         .collection('projects').doc(input.projectId)
         .collection('bookings').doc(bookingId)
 
@@ -165,7 +187,7 @@ export const createBooking = onCall(
       tx.set(bookingRef, bookingPayload)
 
       // Append to the immutable project timeline.
-      const logRef = db
+      const logRef = db()
         .collection('projects').doc(input.projectId)
         .collection('activityLog').doc()
       tx.set(logRef, {

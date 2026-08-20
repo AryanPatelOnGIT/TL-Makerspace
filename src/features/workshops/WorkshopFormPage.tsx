@@ -5,7 +5,7 @@ import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { COLLECTIONS } from '@/services/firebase/firestore'
-import { doc, getDoc, collection, addDoc, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
 import { FileUploader } from '@/components/common/FileUploader'
@@ -41,6 +41,11 @@ export default function WorkshopFormPage() {
       if (!snap.exists()) return null
       return { id: snap.id, ...snap.data() } as Workshop
     }, enabled: isEdit })
+
+  // Allocate the Firestore doc ID up-front for new workshops so FileUploader can
+  // upload against the real path (not a "draft" fallback) before save.
+  const [newWorkshopId] = useState(() => (isEdit ? '' : doc(collection(db, COLLECTIONS.WORKSHOPS)).id))
+  const entityId = isEdit ? (id ?? '') : newWorkshopId
   
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: typedZodResolver(schema),
@@ -66,7 +71,7 @@ export default function WorkshopFormPage() {
     if (!isStaff) return
     try {
       if (isEdit) { await updateDoc(doc(db, COLLECTIONS.WORKSHOPS, id!), { ...data, materialUrls }); toast.success('Updated') }
-      else { const nId = await addDoc(collection(db, COLLECTIONS.WORKSHOPS), { ...data, registeredCount: 0, materialUrls } as Omit<Workshop,'id'|'createdAt'|'updatedAt'>); toast.success('Created'); navigate(`/workshops/${nId}`); return }
+      else { await setDoc(doc(db, COLLECTIONS.WORKSHOPS, newWorkshopId), { ...data, registeredCount: 0, materialUrls } as Omit<Workshop,'id'|'createdAt'|'updatedAt'>); toast.success('Created'); navigate(`/workshops/${newWorkshopId}`); return }
       qc.invalidateQueries({ queryKey: ['workshops'] }); navigate(`/workshops/${id}`)
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed') }
   }
@@ -193,7 +198,7 @@ export default function WorkshopFormPage() {
           <CardContent className="px-0">
             <FileUploader
               folder="workshops"
-              entityId={id ?? 'draft'}
+              entityId={entityId}
               kind="materials"
               existingUrls={materialUrls}
               onChange={setMaterialUrls}

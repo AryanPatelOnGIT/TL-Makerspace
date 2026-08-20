@@ -53,7 +53,9 @@ describe('formatDate', () => {
   })
 
   it('formats a plain { seconds } object', () => {
-    const out = formatDate({ seconds: 1767225600, nanoseconds: 0 })
+    // Midday UTC (2026-01-01T12:00:00Z) so the formatted result stays in 2026
+    // regardless of the test runner's local time zone.
+    const out = formatDate({ seconds: 1767268800, nanoseconds: 0 })
     expect(out).toContain('2026')
   })
 })

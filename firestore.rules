@@ -176,7 +176,12 @@ service cloud.firestore {
                     && request.resource.data.type in ['created', 'booking', 'checkout', 'return', 'status_change']
                     && request.resource.data.summary is string
                     && request.resource.data.summary.size() > 0
-                    && request.resource.data.summary.size() <= 300;
+                    && request.resource.data.summary.size() <= 300
+                    // Timestamps are server-stamped — clients cannot choose their own timeline time.
+                    && request.resource.data.createdAt == request.time
+                    // resourceId must reference the intended document (booking/checkout/project doc id).
+                    && request.resource.data.resourceId is string
+                    && request.resource.data.resourceId.size() > 0;
       allow update, delete: if false; // Immutable log
     }
 

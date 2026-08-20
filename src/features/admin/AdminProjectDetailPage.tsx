@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { getProjectActivity } from '@/services/firebase/activityLog'
@@ -21,7 +21,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { PageHeader } from '@/components/common/PageHeader'
 import { DataPanel } from '@/components/common/DataPanel'
 import { Button } from '@/components/ui/button'
-import { formatDateTime, formatRelativeTime, cn, cleanFirestoreData } from '@/lib/utils'
+import { formatDateTime, formatRelativeTime, cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 const STATUS_STYLE: Record<string, string> = {
@@ -117,8 +117,8 @@ export default function AdminProjectDetailPage() {
   const imageUrls = project?.imageUrls ?? []
   const documentUrls = project?.documentUrls ?? []
 
-  const updateStatus = async (status: 'active' | 'rejected' | 'on_hold' | 'completed', reason?: string) => {
-    if (!project?.docId) return
+  const updateStatus = async (status: 'active' | 'rejected' | 'on_hold' | 'completed', reason?: string): Promise<boolean> => {
+    if (!project?.docId) return false
     setActionLoading(true)
     try {
       await updateProjectStatus(project.docId, status, reason, {
@@ -126,26 +126,25 @@ export default function AdminProjectDetailPage() {
         name: profile?.displayName || 'Admin',
         email: profile?.email || '',
       })
-        await updateDoc(doc(db, COLLECTIONS.PROJECTS, project.docId), cleanFirestoreData({
-          reviewedBy: profile?.displayName || 'Admin',
-          reviewedByEmail: profile?.email || '',
-          reviewedAt: serverTimestamp(),
-      }))
       toast.success(`Project marked as ${status}`)
       qc.invalidateQueries({ queryKey: ['admin', 'projects', id] })
       qc.invalidateQueries({ queryKey: ['admin', 'projects_v2'] })
+      return true
     } catch (error) {
       const firebaseErr = error as { code?: string; message?: string }
       toast.error(firebaseErr.message || 'Failed to update project status')
+      return false
     } finally {
       setActionLoading(false)
     }
   }
 
   const handleReject = async () => {
-    await updateStatus('rejected', rejectionReason.trim() || undefined)
-    setRejectOpen(false)
-    setRejectionReason('')
+    const ok = await updateStatus('rejected', rejectionReason.trim() || undefined)
+    if (ok) {
+      setRejectOpen(false)
+      setRejectionReason('')
+    }
   }
 
   if (isLoading) return <LoadingSpinner text="Loading project…" fullScreen />

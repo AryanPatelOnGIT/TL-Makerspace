@@ -5,12 +5,11 @@ import {
   getDocs,
   getCountFromServer,
   doc,
-  updateDoc,
+  writeBatch,
   serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { COLLECTIONS } from './firestore'
-import { logProjectActivity } from './activityLog'
+import { COLLECTIONS, SUBCOLLECTIONS } from './firestore'
 import { createProjectCallable } from './functions'
 import type { Project, ProjectStatus } from '@/types'
 
@@ -109,7 +108,8 @@ export async function getProjectsByStatus(status?: ProjectStatus): Promise<(Proj
 
 /**
  * Admin: approve or reject a project registration.
- * Also writes a status_change entry to the project's activityLog subcollection.
+ * Commits the project status, reviewedBy metadata, and status_change activity
+ * entry in one atomic batched write (retry-safe via a deterministic log ID).
  */
 export async function updateProjectStatus(
   firestoreDocId: string,
@@ -120,16 +120,33 @@ export async function updateProjectStatus(
   const updates: Record<string, unknown> = {
     status,
     rejectionReason: status === 'rejected' ? (rejectionReason?.trim() || null) : null,
+    reviewedBy: actor?.name ?? 'Admin',
+    reviewedByEmail: actor?.email ?? '',
+    reviewedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   }
   const ref = doc(db, COLLECTIONS.PROJECTS, firestoreDocId)
-  await updateDoc(ref, updates)
 
-  await logProjectActivity(firestoreDocId, {
+  const summary = `Project marked as ${status}${rejectionReason ? ` — ${rejectionReason}` : ''}`
+
+  const batch = writeBatch(db)
+  batch.update(ref, updates)
+
+  const logRef = doc(
+    db,
+    COLLECTIONS.PROJECTS, firestoreDocId,
+    SUBCOLLECTIONS.PROJECT_ACTIVITY_LOG,
+    `status_${firestoreDocId}_${status}`,
+  )
+  batch.set(logRef, {
     type: 'status_change',
-    summary: `Project marked as ${status}${rejectionReason ? ` — ${rejectionReason}` : ''}`,
+    summary: summary.length > 280 ? summary.slice(0, 277) + '…' : summary,
+    resourceId: firestoreDocId,
     userId: actor?.uid ?? 'system',
     userName: actor?.name ?? 'Coordinator',
     userEmail: actor?.email ?? '',
+    createdAt: serverTimestamp(),
   })
+
+  await batch.commit()
 }

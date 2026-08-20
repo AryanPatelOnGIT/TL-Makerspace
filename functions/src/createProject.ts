@@ -3,7 +3,10 @@ import { HttpsError } from 'firebase-functions/v2/https'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { getUserProfile } from './lib/helpers'
 
-const db = getFirestore()
+// Lazy access — see functions/src/lib/helpers.ts.
+function db() {
+  return getFirestore()
+}
 
 // ============================================================
 // createProject — SERVER-ENFORCED project registration (Form 1)
@@ -27,6 +30,20 @@ const EXPECTED_NEEDS = [
   'Pillar Drill', 'Table Saw', 'Mitre Saw', 'Cut-off Saw', 'ESD Workstation',
   'Oscilloscope', 'Function Generator', 'Soldering Station', 'Hand Tools', 'Power Tools', 'Other',
 ]
+
+// Server-enforced bounds (client only checks minimums today).
+const MAX_LENGTHS: Record<string, number> = {
+  title: 200,
+  abstract: 5000,
+  contact: 200,
+  teamMembers: 2000,
+  facultyMentor: 200,
+  department: 200,
+  universityId: 100,
+}
+const MAX_URL_ENTRIES = 10
+const MAX_URL_LENGTH = 2000
+const URL_PATTERN = /^https?:\/\//
 
 function isRealDate(value: string): boolean {
   if (!DATE_PATTERN.test(value)) return false
@@ -89,6 +106,25 @@ export const createProject = onCall(
     if (input.resourceLink && !/^https?:\/\//.test(input.resourceLink)) {
       throw new HttpsError('invalid-argument', 'resourceLink must be an http(s) URL.')
     }
+    // ── Server-enforced maximum lengths ───────────────────────────
+    for (const [field, max] of Object.entries(MAX_LENGTHS)) {
+      const value = (input as unknown as Record<string, unknown>)[field]
+      if (typeof value === 'string' && value.trim().length > max) {
+        throw new HttpsError('invalid-argument', `${field} must be ${max} characters or fewer.`)
+      }
+    }
+    // ── Bounded arrays of http(s) URL strings ─────────────────────
+    for (const [field, value] of Object.entries({ imageUrls: input.imageUrls, documentUrls: input.documentUrls })) {
+      if (value === undefined || value === null) continue
+      if (!Array.isArray(value) || value.length > MAX_URL_ENTRIES) {
+        throw new HttpsError('invalid-argument', `${field} must be an array of at most ${MAX_URL_ENTRIES} URLs.`)
+      }
+      for (const url of value) {
+        if (typeof url !== 'string' || url.length > MAX_URL_LENGTH || !URL_PATTERN.test(url)) {
+          throw new HttpsError('invalid-argument', `${field} entries must be http(s) URLs (${MAX_URL_LENGTH} chars or fewer).`)
+        }
+      }
+    }
     for (const key of Object.keys(input)) {
       if (!PROJECT_KEYS.includes(key as (typeof PROJECT_KEYS)[number])) {
         throw new HttpsError('invalid-argument', `Unexpected field: ${key}`)
@@ -96,10 +132,10 @@ export const createProject = onCall(
     }
 
     // ── 3. Atomic write: counter + project + timeline + roster ─────
-    const counterRef = db.collection('counters').doc('projects')
-    const projectRef = db.collection('projects').doc()
+    const counterRef = db().collection('counters').doc('projects')
+    const projectRef = db().collection('projects').doc()
 
-    await db.runTransaction(async (tx) => {
+    await db().runTransaction(async (tx) => {
       const counterSnap = await tx.get(counterRef)
       const counterData = counterSnap.exists ? counterSnap.data() : undefined
       const nextId = counterData && typeof counterData.nextId === 'number' ? counterData.nextId : 1
@@ -136,7 +172,7 @@ export const createProject = onCall(
       })
 
       // Seed the immutable timeline.
-      const logRef = db.collection('projects').doc(projectRef.id).collection('activityLog').doc()
+      const logRef = db().collection('projects').doc(projectRef.id).collection('activityLog').doc()
       tx.set(logRef, {
         type: 'created',
         summary: `Project registered (${projectCode}) — pending review`,
@@ -150,7 +186,7 @@ export const createProject = onCall(
       // Seed the relational team roster (mentor first, then parsed members).
       const roster = parseRoster(input.teamMembers ?? '')
       const mentor = (input.facultyMentor ?? '').trim()
-      const membersRef = db.collection('projects').doc(projectRef.id).collection('projectMembers')
+      const membersRef = db().collection('projects').doc(projectRef.id).collection('projectMembers')
       if (mentor) {
         tx.set(membersRef.doc(), {
           projectId: projectRef.id, name: mentor, isMentor: true, createdAt: FieldValue.serverTimestamp(),

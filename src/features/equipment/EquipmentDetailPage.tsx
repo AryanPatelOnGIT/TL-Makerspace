@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { COLLECTIONS } from '@/services/firebase/firestore'
-import { doc, getDoc, collectionGroup, query, where, getDocs, limit } from 'firebase/firestore'
+import { doc, getDoc, collectionGroup, query, where, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Equipment, Booking } from '@/types'
@@ -79,7 +79,9 @@ export default function EquipmentDetailPage() {
       const q = query(
         collectionGroup(db, 'bookings'),
         where('equipmentId', '==', id!),
-        limit(50)
+        where('date', '>=', days[0].date),
+        where('date', '<=', days[days.length - 1].date),
+        where('status', 'in', ['pending', 'approved'])
       )
       const snap = await getDocs(q)
       return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Booking)
@@ -130,8 +132,8 @@ export default function EquipmentDetailPage() {
     setIsBooking(true)
     try {
       // Bookings must live under a project. Redirect to the full booking form
-      // (pre-selecting this machine) so the user picks a registered project.
-      navigate(`/bookings/new?machine=${encodeURIComponent(id!)}`)
+      // (pre-selecting this machine, date, and slot) so the user picks a registered project.
+      navigate(`/bookings/new?machine=${encodeURIComponent(id!)}&date=${encodeURIComponent(activeDay)}&startTime=${encodeURIComponent(`${selectedSlot}:00`)}`)
     } finally {
       setIsBooking(false)
     }

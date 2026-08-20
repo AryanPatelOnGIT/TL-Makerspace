@@ -5,13 +5,13 @@ import {
   where,
   orderBy,
   getDocs,
+  getDoc,
+  writeBatch,
   serverTimestamp,
   doc,
-  updateDoc,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS, SUBCOLLECTIONS } from './firestore'
-import { logProjectActivity } from './activityLog'
 import type { Booking, BookingStatus } from '@/types'
 
 // ============================================================
@@ -50,21 +50,23 @@ export async function getBookingsForSlot(
 }
 
 /**
- * Look up a single booking by its Firestore doc ID using a collection-group
- * query on __name__. This works regardless of which project it lives under,
- * keeping URLs stable (/bookings/:id). Returns null if not found.
+ * Look up a single booking by its full Firestore document path
+ * (projects/{projectId}/bookings/{bookingId}). Returns null if not found.
+ * The parent projectId is required — a collection-group `__name__` query with
+ * only the bookingId would never match the fully-qualified path.
  */
-export async function getBookingById(bookingId: string): Promise<Booking | null> {
-  const q = query(allBookings(), where('__name__', '==', bookingId))
-  const snap = await getDocs(q)
-  if (snap.empty) return null
-  const d = snap.docs[0]
-  return { id: d.id, ...d.data() } as Booking
+export async function getBookingById(projectId: string, bookingId: string): Promise<Booking | null> {
+  const ref = doc(db, COLLECTIONS.PROJECTS, projectId, SUBCOLLECTIONS.PROJECT_BOOKINGS, bookingId)
+  const snap = await getDoc(ref)
+  if (!snap.exists()) return null
+  return { id: snap.id, ...snap.data() } as Booking
 }
 
 /**
  * Update booking status (cancel / reject / complete).
  * projectId is required to construct the subcollection path.
+ * The status update and the matching activity-log entry are committed in a
+ * single batch with a deterministic log ID, so retries are idempotent.
  */
 export async function updateBookingStatus(
   projectId: string,
@@ -83,17 +85,31 @@ export async function updateBookingStatus(
   if (status === 'cancelled' && options?.cancelledBy) {
     updates.cancelledBy = options.cancelledBy
   }
-  await updateDoc(ref, updates)
 
   const actor = options?.actor
-  await logProjectActivity(projectId, {
+  const summary = `Booking ${status}${options?.rejectionReason ? ` — ${options.rejectionReason}` : ''}`
+
+  const batch = writeBatch(db)
+  batch.update(ref, updates)
+
+  // Deterministic log ID = idempotency key (retries write the same doc).
+  const logRef = doc(
+    db,
+    COLLECTIONS.PROJECTS, projectId,
+    SUBCOLLECTIONS.PROJECT_ACTIVITY_LOG,
+    `status_${bookingId}_${status}`,
+  )
+  batch.set(logRef, {
     type: 'status_change',
-    summary: `Booking ${status}${options?.rejectionReason ? ` — ${options.rejectionReason}` : ''}`,
+    summary: summary.length > 280 ? summary.slice(0, 277) + '…' : summary,
     resourceId: bookingId,
     userId: actor?.uid ?? 'system',
     userName: actor?.name ?? 'Coordinator',
     userEmail: actor?.email ?? '',
+    createdAt: serverTimestamp(),
   })
+
+  await batch.commit()
 }
 
 /**

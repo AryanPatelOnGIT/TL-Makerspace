@@ -186,7 +186,7 @@ export default function BookingCalendarPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate(`/bookings/${booking.id}`)}
+                        onClick={() => navigate(`/bookings/${booking.projectId}/${booking.id}`)}
                         className="text-white/40 hover:text-white hover:bg-white/10 rounded-full text-xs"
                       >
                         View
