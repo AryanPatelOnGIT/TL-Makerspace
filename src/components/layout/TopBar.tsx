@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { signOut } from '@/services/firebase/auth'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { BrandMark } from '@/components/visual'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,7 @@ const NAV_LINKS = [
 ]
 
 export default function TopBar() {
-  const { profile, user, isStaff } = useAuth()
+  const { profile, user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -59,22 +60,23 @@ export default function TopBar() {
       >
         {/* Left — Logo + Nav */}
         <div className="flex items-center gap-8">
-          {/* Logo */}
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-2.5 shrink-0 group"
           >
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[#56779D] font-bold text-xs shrink-0"
-              style={{ background: '#0A84FF' }}
-            >
-              TL
-            </div>
+            <BrandMark className="h-8 w-8" />
             <span
-              className="font-semibold text-sm tracking-tight text-[#56779D] hidden sm:block"
-              style={{ fontFamily: 'PP Mori, Arial, sans-serif' }}
+              className="hidden sm:inline uppercase leading-none"
+              style={{
+                fontFamily: "'Comic CAT', 'Outfit', sans-serif",
+                fontWeight: 900,
+                fontSize: '1.05rem',
+                letterSpacing: '0.14em',
+                WebkitTextStroke: '0.8px currentColor',
+                color: '#FFFFFF',
+              }}
             >
-              Tinkerers' Lab
+              TINKERERS LAB
             </span>
           </button>
 
@@ -94,7 +96,7 @@ export default function TopBar() {
                 {link.name}
               </button>
             ))}
-            {isStaff && (
+            {isAdmin && (
               <button
                 onClick={() => navigate('/admin')}
                 className={cn(
@@ -140,9 +142,9 @@ export default function TopBar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[#56779D] text-xs font-semibold shrink-0 transition-opacity hover:opacity-80"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 transition-opacity hover:opacity-80"
                 style={{
-                  background: 'linear-gradient(135deg, #0A84FF 0%, #0060D0 100%)',
+                  background: 'linear-gradient(135deg, #514AF1 0%, #3B35C3 100%)',
                   border: '1.5px solid rgba(255,255,255,0.15)',
                 }}
               >
@@ -153,13 +155,13 @@ export default function TopBar() {
               align="end"
               className="w-56"
               style={{
-                background: '#1C1D22',
+                background: '#141517',
                 border: '1px solid rgba(255,255,255,0.10)',
                 borderRadius: '14px',
               }}
             >
               <DropdownMenuLabel className="font-normal px-3 py-2.5">
-                <p className="text-sm font-semibold text-[#56779D] leading-none mb-1">{displayName}</p>
+                <p className="text-sm font-bold text-white leading-none mb-1">{displayName}</p>
                 <p className="text-xs text-[#98989D]" style={{ fontFamily: 'ui-monospace, SF Mono, monospace' }}>
                   {user?.email}
                 </p>
@@ -220,7 +222,7 @@ export default function TopBar() {
               {link.name}
             </button>
           ))}
-          {isStaff && (
+          {isAdmin && (
             <button
               onClick={() => { navigate('/admin'); setMenuOpen(false) }}
               className="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-[#98989D] hover:text-white transition-colors"

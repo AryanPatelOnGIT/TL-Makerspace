@@ -1,18 +1,16 @@
 import { Button } from '@/components/ui/button'
 import React from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { doc, updateDoc, writeBatch, collection } from 'firebase/firestore'
+import { doc, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { COLLECTIONS } from '@/services/firebase/firestore'
 import { useNotifications } from '@/hooks/useNotifications'
-import { Bell, Check, CheckCheck } from 'lucide-react'
+import { Bell, CheckCheck } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 export default function NotificationsPage() {
   const { notifications, loading } = useNotifications()
-  const qc = useQueryClient()
 
   const markRead = async (id: string) => {
     const ref = doc(db, COLLECTIONS.NOTIFICATIONS, id)
@@ -29,8 +27,8 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-2xl animate-fade-in">
-      <div className="flex items-start justify-between">
+    <div className="w-full max-w-3xl space-y-5 animate-fade-in">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-mono uppercase tracking-widest text-accent">Notifications</p>
           <h1 className="text-2xl font-display font-bold mt-1">Notifications</h1>
@@ -62,7 +60,7 @@ export default function NotificationsPage() {
                 <p className={cn('text-sm', !n.isRead && 'font-semibold')}>{n.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
               </div>
-              <span className="text-xs text-muted-foreground shrink-0">{formatRelativeTime(n.createdAt)}</span>
+               <span className="shrink-0 text-xs text-muted-foreground">{formatRelativeTime(n.createdAt)}</span>
             </div>
           ))}
         </div>

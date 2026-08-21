@@ -39,13 +39,21 @@ const MENU_ITEMS = [
 export default function AppSidebar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { isStaff } = useAuth()
-  const isAdmin = isStaff
+  const { isAdmin } = useAuth()
 
   return (
     <Sidebar className="border-r border-hairline bg-graphite text-chalk">
       <SidebarHeader className="h-16 px-6 flex items-center justify-center border-b border-hairline">
-        <div className="font-display font-bold text-lg tracking-wider text-chalk">
+        <div
+          className="uppercase leading-none tracking-[0.14em]"
+          style={{
+            fontFamily: "'Comic CAT', 'Outfit', sans-serif",
+            fontWeight: 900,
+            fontSize: '1.1rem',
+            WebkitTextStroke: '0.8px currentColor',
+            color: '#FFFFFF',
+          }}
+        >
           TINKERERS LAB
         </div>
       </SidebarHeader>

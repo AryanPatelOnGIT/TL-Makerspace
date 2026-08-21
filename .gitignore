@@ -34,7 +34,8 @@ ui-debug.log
 *.sln
 *.sw?
 
-
-
-implementation_plan.md
+# Scratch / environment backups
+.env.local.backup
+.antigravity/
+.docs
 UI

@@ -1,8 +1,8 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   base: '/',
   plugins: [react()],
@@ -16,16 +16,40 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-dom/client'],
+  },
   build: {
-    // Code splitting for optimal free-tier hosting
+    modulePreload: {
+      polyfill: true,
+      resolveDependencies: (_filename, deps) => {
+        return deps.filter(
+          (d) =>
+            !d.includes('vendor-firebase') &&
+            !d.includes('vendor-charts') &&
+            !d.includes('vendor-form'),
+        )
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
             return 'vendor-react'
           }
+          // Firebase split into core/auth/firestore/storage so no single
+          // vendor chunk exceeds the 600 kB warning limit.
+          if (id.includes('node_modules/firebase/firestore')) {
+            return 'vendor-firebase-firestore'
+          }
+          if (id.includes('node_modules/firebase/auth')) {
+            return 'vendor-firebase-auth'
+          }
+          if (id.includes('node_modules/firebase/storage')) {
+            return 'vendor-firebase-storage'
+          }
           if (id.includes('node_modules/firebase')) {
-            return 'vendor-firebase'
+            return 'vendor-firebase-core'
           }
           if (id.includes('node_modules/@tanstack')) {
             return 'vendor-query'
@@ -42,7 +66,11 @@ export default defineConfig({
         },
       },
     },
-    // Warn at 500kb chunks
     chunkSizeWarningLimit: 600,
+    target: 'es2020',
+  },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
   },
 })

@@ -1,54 +1,77 @@
 import {
   collection,
+  collectionGroup,
   query,
   where,
+  orderBy,
   getDocs,
+  getCountFromServer,
+  writeBatch,
   serverTimestamp,
   doc,
   updateDoc,
   Timestamp,
-  addDoc,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { COLLECTIONS } from './firestore'
+import { COLLECTIONS, SUBCOLLECTIONS } from './firestore'
+import { todayStr } from '@/lib/utils'
+import { createToolCheckoutCallable } from './functions'
 import type { ToolCheckout, ToolCondition } from '@/types'
 
 // ============================================================
 // TOOL CHECKOUT SERVICE  (Form 2B — Tier 2 tools)
+// Project-centric restructure: checkouts now live UNDER the project
+//   projects/{projectId}/checkouts/{checkoutId}
+// Cross-project queries use COLLECTION GROUP queries on 'checkouts'.
 // Free-tier optimised — narrow queries, no real-time listeners.
 // "No calendar event — tools are logged, not scheduled." (Spec 2)
 // ============================================================
 
+/** collectionGroup reference for querying checkouts across ALL projects */
+function allCheckoutsRef() {
+  return collectionGroup(db, SUBCOLLECTIONS.PROJECT_CHECKOUTS)
+}
+
 /**
  * Create a new tool checkout record.
  * Called when a user checks out a tool (action = 'checking_out').
- * isOverdue starts as false — updated client-side by comparing dates.
+ * Writes to projects/{projectId}/checkouts/{autoId} and appends a
+ * 'checkout' entry to the project's activityLog.
+ * Creation is delegated to the Cloud Function so identity, project approval,
+ * date validity, and the activity entry are server-enforced atomically.
  */
 export async function createToolCheckout(
   data: Omit<ToolCheckout, 'id' | 'createdAt' | 'updatedAt' | 'isOverdue' | 'returnedAt' | 'conditionAtReturn'>
 ): Promise<string> {
-  const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
-  const docRef = await addDoc(ref, {
-    ...data,
-    action: 'checking_out',
-    isOverdue: false,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  const { data: result } = await createToolCheckoutCallable({
+    projectId: data.projectId,
+    toolCategory: data.toolCategory,
+    toolName: data.toolName,
+    quantity: data.quantity,
+    locationOfUse: data.locationOfUse,
+    outsideLocation: data.outsideLocation,
+    expectedReturnDate: data.expectedReturnDate,
+    expectedReturnTime: data.expectedReturnTime,
+    conditionAtCheckout: data.conditionAtCheckout,
+    notes: data.notes,
   })
-  return docRef.id
+  return result.checkoutId
 }
 
 /**
  * Mark a checkout as returned.
+ * projectId is required to construct the subcollection path.
  * Updates action to 'returning', sets returnedAt and conditionAtReturn.
- * isOverdue is cleared (false) on return.
+ * isOverdue is cleared (false) on return. Appends a 'return' activity entry.
  */
 export async function returnTool(
+  projectId: string,
   checkoutId: string,
   conditionAtReturn: ToolCondition,
-  notes?: string
+  notes?: string,
+  actor?: { uid: string; name: string; email: string }
 ): Promise<void> {
-  const ref = doc(db, COLLECTIONS.TOOL_CHECKOUTS, checkoutId)
+  const ref = doc(db, COLLECTIONS.PROJECTS, projectId, SUBCOLLECTIONS.PROJECT_CHECKOUTS, checkoutId)
   const updates: Record<string, unknown> = {
     action: 'returning',
     conditionAtReturn,
@@ -57,18 +80,40 @@ export async function returnTool(
     updatedAt: serverTimestamp(),
   }
   if (notes) updates.notes = notes
-  await updateDoc(ref, updates)
+
+  const summary = `Returned tool${notes ? ` — ${notes}` : ''}`
+
+  const batch = writeBatch(db)
+  batch.update(ref, updates)
+
+  // Deterministic log ID = idempotency key (retries write the same doc).
+  const logRef = doc(
+    db,
+    COLLECTIONS.PROJECTS, projectId,
+    SUBCOLLECTIONS.PROJECT_ACTIVITY_LOG,
+    `return_${checkoutId}`,
+  )
+  batch.set(logRef, {
+    type: 'return',
+    summary: summary.length > 280 ? summary.slice(0, 277) + '…' : summary,
+    resourceId: checkoutId,
+    userId: actor?.uid ?? 'system',
+    userName: actor?.name ?? 'User',
+    userEmail: actor?.email ?? '',
+    createdAt: serverTimestamp(),
+  })
+
+  await batch.commit()
 }
 
 /**
  * Get all active (not yet returned) checkouts for a specific user.
  * "Active" = action == 'checking_out' AND returnedAt is null.
- * Narrow query: userId + action. Ordered newest first.
+ * COLLECTION GROUP query: userId + action. Ordered newest first.
  */
 export async function getActiveUserCheckouts(userId: string): Promise<ToolCheckout[]> {
-  const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
   const q = query(
-    ref,
+    allCheckoutsRef(),
     where('userId', '==', userId),
     where('action', '==', 'checking_out')
   )
@@ -81,14 +126,26 @@ export async function getActiveUserCheckouts(userId: string): Promise<ToolChecko
 }
 
 /**
+ * Get ALL checkouts (staff view — including returned).
+ * COLLECTION GROUP query across all projects, ordered newest first.
+ */
+export async function getAllCheckouts(): Promise<ToolCheckout[]> {
+  const q = query(allCheckoutsRef(), orderBy('createdAt', 'desc'))
+  const snap = await getDocs(q)
+  const epoch = new Timestamp(0, 0)
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }) as ToolCheckout)
+    .sort((a, b) => (b.createdAt ?? epoch).toMillis() - (a.createdAt ?? epoch).toMillis())
+}
+
+/**
  * Get ALL active checkouts (staff view — for overdue monitoring).
- * Returns all checking_out records where returnedAt is null.
+ * COLLECTION GROUP query. Returns all checking_out records where returnedAt is null.
  * Client-side overdue detection: compare expectedReturnDate < today.
  */
 export async function getAllActiveCheckouts(): Promise<ToolCheckout[]> {
-  const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
   const q = query(
-    ref,
+    allCheckoutsRef(),
     where('action', '==', 'checking_out')
   )
   const snap = await getDocs(q)
@@ -98,30 +155,55 @@ export async function getAllActiveCheckouts(): Promise<ToolCheckout[]> {
 }
 
 /**
- * Get overdue checkouts (staff view).
- * Queries isOverdue == true. isOverdue is set on the document when detected client-side.
- * Phase 9 (server-side) will have a daily trigger to mark these automatically.
+ * Count of active (not yet returned) checkouts across all projects.
+ * Uses getCountFromServer — no document payload reads (cheap KPI).
  */
-export async function getOverdueCheckouts(): Promise<ToolCheckout[]> {
-  const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
-  const q = query(
-    ref,
-    where('isOverdue', '==', true)
-  )
-  const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ToolCheckout)
+export async function getActiveCheckoutCount(): Promise<number> {
+  const q = query(allCheckoutsRef(), where('action', '==', 'checking_out'))
+  const snap = await getCountFromServer(q)
+  return snap.data().count
+}
+
+/**
+ * Count of overdue checkouts (authoritative `isOverdue` flag set by the
+ * scheduled sweep). Uses getCountFromServer — no document payload reads.
+ */
+export async function getOverdueCheckoutCount(): Promise<number> {
+  const q = query(allCheckoutsRef(), where('isOverdue', '==', true))
+  const snap = await getCountFromServer(q)
+  return snap.data().count
+}
+
+/**
+ * Total checkout count (active + returned). Uses getCountFromServer.
+ */
+export async function getTotalCheckoutCount(): Promise<number> {
+  const snap = await getCountFromServer(allCheckoutsRef())
+  return snap.data().count
 }
 
 /**
  * Get a user's full checkout history (checked-out + returned).
- * Ordered newest first.
+ * COLLECTION GROUP query. Ordered newest first.
  */
 export async function getUserCheckoutHistory(userId: string): Promise<ToolCheckout[]> {
-  const ref = collection(db, COLLECTIONS.TOOL_CHECKOUTS)
   const q = query(
-    ref,
+    allCheckoutsRef(),
     where('userId', '==', userId)
   )
+  const snap = await getDocs(q)
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }) as ToolCheckout)
+    .sort((a, b) => b.createdAt?.toMillis?.() - a.createdAt?.toMillis?.())
+}
+
+/**
+ * Get every tool checkout that hangs under one project (admin drill-down).
+ * Scoped collection query — no collection-group scan needed.
+ */
+export async function getProjectCheckouts(projectId: string): Promise<ToolCheckout[]> {
+  const ref = collection(db, COLLECTIONS.PROJECTS, projectId, SUBCOLLECTIONS.PROJECT_CHECKOUTS)
+  const q = query(ref, orderBy('createdAt', 'desc'))
   const snap = await getDocs(q)
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }) as ToolCheckout)
@@ -134,17 +216,18 @@ export async function getUserCheckoutHistory(userId: string): Promise<ToolChecko
  */
 export function isCheckoutOverdue(checkout: ToolCheckout): boolean {
   if (checkout.returnedAt) return false
-  const today = new Date().toISOString().split('T')[0] // "YYYY-MM-DD"
-  return checkout.expectedReturnDate < today
+  if (!checkout.expectedReturnDate) return false
+  return checkout.expectedReturnDate < todayStr()
 }
 
 /**
  * Flag a checkout as overdue in Firestore.
- * Called client-side when overdue is detected — sets isOverdue: true.
- * Phase 9 will automate this via a daily server-side trigger.
+ * projectId is required to construct the subcollection path.
+ * Called by the client for immediate UI consistency; the scheduled function is
+ * the authoritative daily sweep for overdue records.
  */
-export async function markCheckoutOverdue(checkoutId: string): Promise<void> {
-  const ref = doc(db, COLLECTIONS.TOOL_CHECKOUTS, checkoutId)
+export async function markCheckoutOverdue(projectId: string, checkoutId: string): Promise<void> {
+  const ref = doc(db, COLLECTIONS.PROJECTS, projectId, SUBCOLLECTIONS.PROJECT_CHECKOUTS, checkoutId)
   await updateDoc(ref, {
     isOverdue: true,
     updatedAt: serverTimestamp(),

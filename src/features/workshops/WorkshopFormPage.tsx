@@ -1,13 +1,14 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { typedZodResolver } from '@/lib/form'
 import { z } from 'zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { COLLECTIONS } from '@/services/firebase/firestore'
-import { doc, getDoc, collection, addDoc, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
+import { FileUploader } from '@/components/common/FileUploader'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -40,14 +41,21 @@ export default function WorkshopFormPage() {
       if (!snap.exists()) return null
       return { id: snap.id, ...snap.data() } as Workshop
     }, enabled: isEdit })
+
+  // Allocate the Firestore doc ID up-front for new workshops so FileUploader can
+  // upload against the real path (not a "draft" fallback) before save.
+  const [newWorkshopId] = useState(() => (isEdit ? '' : doc(collection(db, COLLECTIONS.WORKSHOPS)).id))
+  const entityId = isEdit ? (id ?? '') : newWorkshopId
   
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema) as any,
+    resolver: typedZodResolver(schema),
     defaultValues: { type: 'workshop', capacity: 20, isActive: true, certificateIssued: false },
   })
+  const [materialUrls, setMaterialUrls] = useState<string[]>(existing?.materialUrls ?? [])
 
   React.useEffect(() => {
     if (existing) {
+      setMaterialUrls(existing.materialUrls ?? [])
       reset({
         title: existing.title, type: existing.type as any, description: existing.description,
         instructor: existing.instructor, instructorEmail: existing.instructorEmail,
@@ -62,8 +70,8 @@ export default function WorkshopFormPage() {
   const onSubmit = async (data: FormData) => {
     if (!isStaff) return
     try {
-      if (isEdit) { await updateDoc(doc(db, COLLECTIONS.WORKSHOPS, id!), { ...data, materialUrls: existing?.materialUrls ?? [] }); toast.success('Updated') }
-      else { const nId = await addDoc(collection(db, COLLECTIONS.WORKSHOPS), { ...data, registeredCount: 0, materialUrls: [] } as Omit<Workshop,'id'|'createdAt'|'updatedAt'>); toast.success('Created'); navigate(`/workshops/${nId}`); return }
+      if (isEdit) { await updateDoc(doc(db, COLLECTIONS.WORKSHOPS, id!), { ...data, materialUrls }); toast.success('Updated') }
+      else { await setDoc(doc(db, COLLECTIONS.WORKSHOPS, newWorkshopId), { ...data, registeredCount: 0, materialUrls } as Omit<Workshop,'id'|'createdAt'|'updatedAt'>); toast.success('Created'); navigate(`/workshops/${newWorkshopId}`); return }
       qc.invalidateQueries({ queryKey: ['workshops'] }); navigate(`/workshops/${id}`)
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed') }
   }
@@ -74,7 +82,7 @@ export default function WorkshopFormPage() {
   const selectClasses = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 
   return (
-    <div className="space-y-6 container py-6 mx-auto max-w-3xl animate-fade-in">
+    <div className="mx-auto max-w-3xl space-y-5 py-4 animate-fade-in sm:space-y-6 sm:py-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
@@ -180,11 +188,30 @@ export default function WorkshopFormPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4 pb-12">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+        <Card className="rounded-card border border-hairline bg-charcoal p-6">
+          <CardHeader className="px-0">
+            <CardTitle className="text-sm font-bold text-white">Workshop Materials</CardTitle>
+            <CardDescription className="text-xs text-white/50">
+              Upload slides, handouts, or certificates (optional).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-0">
+            <FileUploader
+              folder="workshops"
+              entityId={entityId}
+              kind="materials"
+              existingUrls={materialUrls}
+              onChange={setMaterialUrls}
+              label="Upload materials"
+            />
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-col-reverse gap-3 pb-6 sm:flex-row sm:justify-end sm:gap-4">
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="gap-2">
+          <Button type="submit" disabled={isSubmitting} className="w-full gap-2 sm:w-auto">
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {isEdit ? 'Save changes' : 'Create Workshop'}
           </Button>
